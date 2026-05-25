@@ -1,0 +1,6 @@
+# config/config.yaml
+
+references:
+  genome_fasta: "/mnt/drive02/PureCN/input_file/intervals/hs37d5.fa"
+  mappability: "/mnt/drive02/PureCN/input_file/intervals/mappabilityAlign100mer.bigWig"
+  baits_clean: "/mnt/drive02/PureCN/input_file/intervals/all_probes_targets_hg19_clean.bed"

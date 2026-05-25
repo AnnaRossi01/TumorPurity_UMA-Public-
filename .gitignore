@@ -1,0 +1,11 @@
+# Escludi file di calcolo e ambienti pesanti
+.snakemake/
+*.sif
+*.rds
+
+# Escludi categoricamente dati genomici e report biologici
+resources/
+results/
+
+# Escludi log di esecuzione temporanei dei nodi
+workflow/scripts/*.log

@@ -1,6 +1,18 @@
 # config/config.yaml
 
-references:
-  genome_fasta: "/mnt/drive02/PureCN/input_file/intervals/hs37d5.fa"
-  mappability: "/mnt/drive02/PureCN/input_file/intervals/mappabilityAlign100mer.bigWig"
-  baits_clean: "/mnt/drive02/PureCN/input_file/intervals/all_probes_targets_hg19_clean.bed"
+## definig working directory
+wd: /mnt
+runWd: /mnt/drive02/Tumor_purity_pipeline
+singularity_image: /mnt/drive02/Tumor_purity_pipeline/workflow/envs
+
+## references
+refGen: /mnt/storage_raid5/reference_files/hg19/genome/hs37d5.fa
+bed_file: /mnt/storage_raid5/reference_files/hg19/targets/targets_hg19.bed  
+
+
+## ASCAT.sc parameters
+normal: /mnt/storage_raid5/reference_files/hg19/donor/remDup_recal_DONOR.bam
+
+## PureCN parameters
+baits_clean: /mnt/drive02/Tumor_purity_pipeline/purecn_input/all_probes_targets_hg19_clean.bed
+mappability: /mnt/drive02/Tumor_purity_pipeline/purecn_input/mappabilityAlign100mer.bigWig

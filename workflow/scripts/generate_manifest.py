@@ -35,7 +35,7 @@ def main():
         return
 
     # 2. Reading the Excel database (specific sheet)
-    df = pd.read_excel(excel_file, sheet_name='db_purity_0.90')
+    df = pd.read_excel(excel_file, sheet_name='db_purity_no7500')
     print(f" Uploaded {len(df)} excel's samples. Processing...")
 
     # List that will contain the rows of our final manifest

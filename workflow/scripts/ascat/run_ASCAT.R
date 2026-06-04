@@ -20,14 +20,27 @@
 
 # IMPORTANTE --> run_targeted_sequencing.R > printResults_all.R > plot_Results.R
 
+# OPTIMIZATION FOR HPC PIPELINE 
+
 library(ASCAT.sc)
 library(data.table)
 library(tidyverse)
 
+
+# ---- UPLOAD THE MODIFIED SCRIPT ----
+source("workflow/scripts/ascat/run_targeted_sequencing.R")
+source("workflow/scripts/ascat/plot_results_mod.R")
+source("workflow/scripts/ascat/print_res_mod.R")
+source("workflow/scripts/ascat/cn_profile_ascat.R")
+
+
+
 # ---- TAKE THE ARGUMENTS FROM THE SNAKEFILE ----
 args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 4) {
-  stop("Error: 4 arguments needed: Patient_ID, Path_BAM, Path_Normal, Out_Dir")
+
+# checking the numb of argumnets
+if (length(args) < 5) {
+  stop("Error: 5 arguments needed: Patient_ID, Path_BAM, Path_Normal, Out_Dir, BED_File")
 }
 
 # ---- SETUP VARIABLES ----
@@ -35,7 +48,7 @@ sample_id <- args[1]    # Patient ID, e.g., "6922_S6"
 bam_path  <- args[2]    # Path to the tumor BAM file, e.g., "C:/Users/rossi/ASCAT_UMA/bams_purity0.9/remDup_recal_6922_S6.bam"
 normal_bam <- args[3]   # Path to the normal BAM file, e.g., "C:/Users/rossi/ASCAT_UMA/normal_bam/remDup_recal_DONOR.bam"
 outDir    <- args[4]    # Output directory, e.g., "C:/Users/rossi/ASCAT_UMA/output_6922_S6"
-bed       <- "./targets_hg19.bed"
+bed      <- args[5]     # Path to the BED file passed from config.yaml
 
 message("--- Execution for Sample: ", sample_id, " ---")
 if (!dir.exists(outDir)) dir.create(outDir, recursive = TRUE)

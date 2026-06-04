@@ -1,0 +1,31 @@
+
+#### --- Loading Flow Cytometry --- ####
+
+Flow Cytometry Data loaded: 5 samples
+
+#### --- Loading ASCAT.sc results --- ####
+
+ASCAT.sc Data loaded: 5 samples
+
+#### --- Loading ichorCNA results --- ####
+
+ichorCNA Data loaded: 5 samples
+
+#### --- Loading PureCN results --- ####
+
+PureCN Data loaded: 5 samples
+
+#### --- Results merged and saved to: results/purity_comparison/purity_comparison.csv --- ####
+
+----------------------------------------------------------------------------------------------------
+
+#### --- Generating plots for ascat vs Flow Cytometry --- ####
+
+
+#### --- Generating plots for ichorCNA vs Flow Cytometry --- ####
+
+
+#### --- Generating plots for PureCN vs Flow Cytometry --- ####
+
+ #### --- Visualization completed, results saved in: results/purity_comparison --- ####
+

@@ -1,7 +1,10 @@
+library(tidyverse)
+
+
 plot_ascat_sc_segments <- function(seg_file, target_id, out_dir) {
   
   # 1. Importo  file ASCAT.sc
-  df_seg <- fread(seg_file) %>% as.data.frame()
+  df_seg <- as.data.frame(fread(seg_file))
   
   # 2. Pulizia e Preparazione
   chr_levels <- c(as.character(1:22), "X", "Y")

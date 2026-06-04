@@ -1,6 +1,6 @@
 # !usr/bin/python3
 
-# UPDATE-18-05-2026
+# UPDATE-26-05-2026
 #    
 # AIM -- Compare the tumor purity from flow citometry, ASCAT.sc, ichorCNA and PureCN results for the same samples
 
@@ -13,12 +13,15 @@
 
 
 # ---- LIBRARIES ----
+import argparse
+import argparse
+from pathlib import Path
 import pandas as pd
-from pathlib import Path        # for handling file paths
 import numpy as np
 import matplotlib.pyplot as plt
 import sys 
 from visualization import TumorPurityVisualization
+
 
 
 class TumorPurityComparison:
@@ -27,28 +30,32 @@ class TumorPurityComparison:
     output_dir: directory where the merged results will be saved
     """
 
-    def __init__(self, input_dir, output_dir):
-        " Initialize the paths and data containers"
-        self.input_dir = Path(input_dir)
+    def __init__(self, manifest_path, flow_db_path, ascat_dir, purecn_dir, output_dir):
+        " Initialize the paths of snakefile"
+        self.manifest_path = Path(manifest_path)
+        self.flow_db_path = Path(flow_db_path)
+        self.ascat_base_dir = Path(ascat_dir)
+        self.purecn_base_dir = Path(purecn_dir)
         self.output_dir = Path(output_dir)
+
+        self.manifest_df = pd.read_csv(self.manifest_path)
+        self.manifest_df['sample_id'] = self.manifest_df['sample_id'].astype(str).str.strip()
+        #self.manifest_path['sample_id'] = self.manifest_df['sample_id'].astype(str).str.strip() # ensure that the sample_id column is treated as string
+
         self.df_flow = None
         self.df_tools = {} # dictionary for all the tools i will use (ASCAT.sc, PureCN...)
         self.df_merged = None
 
 
-    def load_flow_citometry_results(self,file_flow, sheet="db_purity_0.90"):
+    def load_flow_citometry_results(self):
         """Reads the flow citometry results from an Excel file and returns a DataFrame. Select only the purity value for each patient
         # possibile problema --> l'exel di input con dati di flow dentro cartella di ASCAT_UMA, in futuro magari va modiifcato il percorso per dividere meglio i dati 
         """
-
-        # Construct the full path to the file
-        path = self.input_dir / "db_uma" / file_flow
-        
-        if not path.exists():
-            raise FileNotFoundError(f"Flow data not found at: {path}")
+        if not self.flow_db_path.exists():
+            raise FileNotFoundError(f"ERROR: no excel file found at {self.flow_db_path.resolve()}")
 
         print(f"\n#### --- Loading Flow Cytometry --- ####\n")
-        df = pd.read_excel(path, sheet_name="db_purity_0.90")       # because I have more than one sheet in the excel, I need to specify which one I want to load (in this case, the one with purity results)
+        df = pd.read_excel(self.flow_db_path, sheet_name="db_purity_no7500")       # because I have more than one sheet in the excel, I need to specify which one I want to load (in this case, the one with purity results)
         self.df_flow = df[['ID', 'purity']].rename(columns={'purity': 'purity_flow'})
         print(f"Flow Cytometry Data loaded: {len(self.df_flow)} samples\n")
 
@@ -61,8 +68,8 @@ class TumorPurityComparison:
 
         # iterate over the sample IDs in the flow citometry DataFrame and look for the corresponding ASCAT.sc results in the input directory. 
         # If found, extract the purity value and store it in a list of dictionaries, which will be converted to a DataFrame at the end.
-        for sample_id in self.df_flow['ID']: 
-            file_ASCAT = self.input_dir / f"output_{sample_id}" / f"summary_project_{sample_id}.txt"
+        for sample_id in self.manifest_df['sample_id']: 
+            file_ASCAT = self.ascat_base_dir / f"{sample_id}" / f"summary_project_{sample_id}.txt"
 
             if file_ASCAT.exists(): 
                 purity_val = pd.read_csv(file_ASCAT, sep="\t")['purity'].iloc[0]
@@ -78,89 +85,88 @@ class TumorPurityComparison:
         ichorCNA_list = []
         print(f"#### --- Loading ichorCNA results --- ####\n")
 
-        for sample_id in self.df_flow['ID']:
-            base_dir = Path("/mnt/c/Users/rossi/comparison_tools")
-            file_ichorCNA = base_dir / "ichorCNA" / f"{sample_id}.params.txt"
+        for _,row in self.manifest_df.iterrows():
+            sample_id = row['sample_id']    
+            ichor_path = str(row['ichor_res'])  # Assuming the manifest has a column 'ichor_res' with the path to the ichorCNA results
+            
 
-            if file_ichorCNA.exists(): 
-                tumor_fraction = pd.read_csv(file_ichorCNA, sep="\t", nrows=1)['Tumor Fraction'].iloc[0]
+            if ichor_path != "NA" and Path(ichor_path).exists():
+                tumor_fraction = pd.read_csv(ichor_path, sep="\t", nrows=1)['Tumor Fraction'].iloc[0]
                 ichorCNA_list.append({"ID": sample_id, 'purity_ichorCNA': tumor_fraction})
-
+            else:
+                ichorCNA_list.append({"ID": sample_id, 'purity_ichorCNA': pd.NA})
+        
         self.df_tools['ichorCNA'] = pd.DataFrame(ichorCNA_list)
         print(f"ichorCNA Data loaded: {len(self.df_tools['ichorCNA'])} samples\n")
+
 
     def load_PureCN_results(self):
         """Reads PureCN summary file (csv) for each sample and obtain the purity results - results into server"""
         PureCN_list = []
         print(f"#### --- Loading PureCN results --- ####\n")
 
-
-        # ASSICURATI DI METTERE IL TUO UTENTE REALE QUI
-        mounted_drive_base = Path("/home/anna_rossi/Server_drive02")
-        server_results_base = mounted_drive_base / "PureCN" / "output" / "purecn_results"
-
-        for sample_id in self.df_flow['ID']:
-            sample_id_str = str(sample_id).strip() # .strip() rimuove eventuali spazi invisibili
-            
-            file_PureCN = server_results_base / sample_id_str / f"{sample_id_str}.csv"
-
-            # ---------------------------------------------------------
-            # DEBUGGING
-            # ---------------------------------------------------------
-            #print(f"[DEBUG PureCN] ID Campione analizzato: '{sample_id_str}'")
-            #print(f"[DEBUG PureCN] Path assoluto generato: {file_PureCN}")
-            #print(f"[DEBUG PureCN] Il file esiste fisicamente? {file_PureCN.exists()}\n")
-            # ---------------------------------------------------------
-
+        for sample_id in self.manifest_df['sample_id']:
+            file_PureCN = self.purecn_base_dir / sample_id / f"{sample_id}.csv"   
+                 
             if file_PureCN.exists(): 
                 purity_val = pd.read_csv(file_PureCN)['Purity'].iloc[0]
-                PureCN_list.append({"ID": sample_id_str, 'purity_PureCN': purity_val})
+                PureCN_list.append({"ID": sample_id, 'purity_PureCN': purity_val})
             else:
-                print(f"  [WARNING] PureCN result not found for: {sample_id_str}\n")
+                PureCN_list.append({"ID": sample_id, 'purity_PureCN': pd.NA})
+                print(f"  [WARNING] PureCN result not found for: {sample_id}, added NA\n")
 
         # Manteniamo la protezione anti-crash di Pandas
         self.df_tools['PureCN'] = pd.DataFrame(PureCN_list, columns=["ID", "purity_PureCN"])
         print(f"PureCN Data loaded: {len(self.df_tools['PureCN'])} samples\n")
 
 
-
-    def merge_and_save(self, filename="comparison_purity.tsv"): 
+    def merge_and_save(self): 
         """Merges the flow citometry and all tool results on the ID column"""
-        
         self.df_merged = self.df_flow.copy()
         
-        # Merge all tools dynamically - the pd.merge function can merge only two df at the time, so I have to use a iterative method to merge all the tools in the dictionary
         for tool_name, df_tool in self.df_tools.items():
-            self.df_merged = pd.merge(self.df_merged, df_tool, on="ID", how="left")
+            if df_tool is not None and not df_tool.empty:
+                self.df_merged = pd.merge(self.df_merged, df_tool, on='ID', how='left')
+        
+        self.output_dir.parent.mkdir(exist_ok=True, parents=True)
+        self.df_merged.to_csv(self.output_dir, sep='\t', index=False)
+        print(f"#### --- Results merged and saved to: {self.output_dir} --- ####\n")
+    
+def main():
+    parser = argparse.ArgumentParser(description="OOP Purity Comparison Parser")
+    parser.add_argument("--manifest", required=True, help="Path to manifest.csv")
+    parser.add_argument("--flow_db", required=True, help="Path to Excel flow cytometry DB")
+    parser.add_argument("--ascat_dir", required=True, help="Base directory for ASCAT results")
+    parser.add_argument("--purecn_dir", required=True, help="Base directory for PureCN results")
+    parser.add_argument("--output", required=True, help="Final TSV output path")
+    args = parser.parse_args()
 
-        self.output_dir.mkdir(exist_ok=True, parents=True)  #create the output_dir if doesn't exist
-        out_path = self.output_dir / filename
-
-        self.df_merged.to_csv(out_path, sep='\t', index=False)
-        print(f"#### --- Results merged and saved to: {out_path} --- ####\n")
-
-
-
-if __name__ == "__main__":
-    INPUT_DIR = Path("/home/anna_rossi/ASCAT_UMA")
-    OUTPUT_DIR = Path("/home/anna_rossi/comparison_tools/output")
-    output_filename = "tumor_purity_comparison.tsv"
-
-    tumor_comparison = TumorPurityComparison(INPUT_DIR, OUTPUT_DIR)
-    tumor_comparison.load_flow_citometry_results("flow_cytometry_db.xlsx")
+    tumor_comparison = TumorPurityComparison(
+        manifest_path=args.manifest,
+        flow_db_path=args.flow_db,
+        ascat_dir=args.ascat_dir,
+        purecn_dir=args.purecn_dir,
+        output_dir=args.output
+    )
+    
+    tumor_comparison.load_flow_citometry_results()
     tumor_comparison.load_ASCAT_results()
     tumor_comparison.load_ichor_results()
     tumor_comparison.load_PureCN_results()
-    tumor_comparison.merge_and_save(filename=output_filename)
-    print(tumor_comparison.df_merged.to_string(index=False))
+    tumor_comparison.merge_and_save()
 
-    # Visualization
-    vis_path = OUTPUT_DIR / output_filename
-    visualization = TumorPurityVisualization(vis_path, OUTPUT_DIR)
+    # Esecuzione del modulo di visualizzazione
+    try:
+        vis_path = Path(args.output)
+        out_dir = vis_path.parent
+        visualization = TumorPurityVisualization(vis_path, out_dir)
 
-    print("-"*100)
-    visualization.load_data()
-    visualization.generate_all_plots()
-    print(f" #### --- Visualization completed, results saved in: {OUTPUT_DIR} --- ####\n")
+        print("-" * 100)
+        visualization.load_data()
+        visualization.generate_all_plots()
+        print(f" #### --- Visualization completed, results saved in: {out_dir} --- ####\n")
+    except Exception as e:
+        print(f"[ERROR] Visualization module failed: {e}")
 
-
+if __name__ == "__main__":
+    main()

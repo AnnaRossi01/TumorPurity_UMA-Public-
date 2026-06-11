@@ -63,8 +63,7 @@ rule ascat_sc:
 rule purecn_intervals:
     input:
         baits = config['baits_clean'],
-        mappability = config['mappability'],
-        ref = config['refGen']
+        ref   = config['refGen']
     output:
         intervals = "resources/purecn_assets/baits_optimized_hg19.txt"
     singularity:
@@ -76,8 +75,6 @@ rule purecn_intervals:
         Rscript $PURECN/IntervalFile.R \
             --in-file {input.baits} \
             --fasta {input.ref} \
-            --mappability {input.mappability} \
-            --off-target \
             --genome hg19 \
             --out-file {output.intervals} > {log} 2>&1
         """
@@ -180,7 +177,7 @@ rule purecn_run:
         tumor_cov = "results/purecn/coverage/{sample}/{sample}_coverage.txt.gz",
         vcf       = lambda wildcards: VCF[wildcards.sample],
         intervals = "resources/purecn_assets/baits_optimized_hg19.txt",
-        normaldb  = "resources/purecn_assets/normalDB_panel_aio_hg19.rds",   
+        normaldb  = "resources/purecn_assets/normalDB_panel_aio_hg19.rds",
     output:
         out_dir = directory("results/purecn/{sample}"),
         csv_res = "results/purecn/{sample}/{sample}.csv"
@@ -197,8 +194,9 @@ rule purecn_run:
     shell:
         """
         mkdir -p {output.out_dir}
-        
-        # L'argomento --out richiede il prefisso, quindi uniamo directory e sample_id
+
+        # Run PureCN with error handling for low-variant samples
+        set +e
         Rscript $PURECN/PureCN.R \
             --out {output.out_dir}/{params.sample_id} \
             --tumor {input.tumor_cov} \
@@ -212,7 +210,29 @@ rule purecn_run:
             --postoptimize \
             --force \
             --seed 123 \
-            --cores {resources.cpus_per_task} > {log} 2>&1
+            --cores {resources.cpus_per_task} >> {log} 2>&1
+        PURECN_EXIT=$?
+        set -e
+
+        # Check if PureCN succeeded; if not and CSV is missing, create dummy with NA
+        if [ ! -f {output.csv_res} ]; then
+            if [ $PURECN_EXIT -ne 0 ]; then
+                echo "[FALLBACK] PureCN failed with exit code $PURECN_EXIT (likely insufficient variants or PSCBS segmentation crash)." >> {log}
+                echo "[FALLBACK] Creating dummy CSV with NA values for {params.sample_id}..." >> {log}
+                cat > {output.csv_res} << 'CSVEOF'
+                Sample.ID,purity,ploidy
+                {params.sample_id},NA,NA
+                CSVEOF
+                echo "[FALLBACK] Dummy CSV created. Sample will be marked as failed in downstream analysis." >> {log}
+            else
+                echo "[ERROR] PureCN exited successfully but output CSV not found!" >> {log}
+                exit 1
+            fi
+        else
+            if [ $PURECN_EXIT -ne 0 ]; then
+                echo "[WARNING] PureCN exited with error code $PURECN_EXIT, but output CSV exists. Proceeding with available output." >> {log}
+            fi
+        fi
         """
 
 # tumor purity comaprison 

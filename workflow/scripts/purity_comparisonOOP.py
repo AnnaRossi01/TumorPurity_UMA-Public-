@@ -42,9 +42,14 @@ class TumorPurityComparison:
         self.manifest_df['sample_id'] = self.manifest_df['sample_id'].astype(str).str.strip()
         #self.manifest_path['sample_id'] = self.manifest_df['sample_id'].astype(str).str.strip() # ensure that the sample_id column is treated as string
 
+        # Initialize quality_flag if not present (backward compatibility)
+        if 'quality_flag' not in self.manifest_df.columns:
+            self.manifest_df['quality_flag'] = 'PASS'
+
         self.df_flow = None
         self.df_tools = {} # dictionary for all the tools i will use (ASCAT.sc, PureCN...)
         self.df_merged = None
+        self.failed_samples = []  # Track failed samples for reporting
 
 
     def load_flow_citometry_results(self):
@@ -55,7 +60,7 @@ class TumorPurityComparison:
             raise FileNotFoundError(f"ERROR: no excel file found at {self.flow_db_path.resolve()}")
 
         print(f"\n#### --- Loading Flow Cytometry --- ####\n")
-        df = pd.read_excel(self.flow_db_path, sheet_name="db_purity_no7500")       # because I have more than one sheet in the excel, I need to specify which one I want to load (in this case, the one with purity results)
+        df = pd.read_excel(self.flow_db_path, sheet_name="db_purity_no1")       # because I have more than one sheet in the excel, I need to specify which one I want to load (in this case, the one with purity results)
         self.df_flow = df[['ID', 'purity']].rename(columns={'purity': 'purity_flow'})
         print(f"Flow Cytometry Data loaded: {len(self.df_flow)} samples\n")
 
@@ -87,7 +92,7 @@ class TumorPurityComparison:
 
         for _,row in self.manifest_df.iterrows():
             sample_id = row['sample_id']    
-            ichor_path = str(row['ichor_res'])  # Assuming the manifest has a column 'ichor_res' with the path to the ichorCNA results
+            ichor_path = str(row['ichor_res'])  
             
 
             if ichor_path != "NA" and Path(ichor_path).exists():
@@ -106,10 +111,18 @@ class TumorPurityComparison:
         print(f"#### --- Loading PureCN results --- ####\n")
 
         for sample_id in self.manifest_df['sample_id']:
-            file_PureCN = self.purecn_base_dir / sample_id / f"{sample_id}.csv"   
-                 
-            if file_PureCN.exists(): 
-                purity_val = pd.read_csv(file_PureCN)['Purity'].iloc[0]
+            file_PureCN = self.purecn_base_dir / sample_id / f"{sample_id}.csv"
+
+            if file_PureCN.exists():
+                purity_val = pd.read_csv(file_PureCN)['purity'].iloc[0]
+
+                # Check if PureCN failed (NA/NaN value)
+                if pd.isna(purity_val):
+                    print(f"  [FILTERED] PureCN failed for {sample_id}: insufficient somatic variants (likely PSCBS crash)")
+                    self.failed_samples.append(sample_id)
+                    # Mark manifest entry as FAIL
+                    self.manifest_df.loc[self.manifest_df['sample_id'] == sample_id, 'quality_flag'] = 'FAIL_LOW_VARIANTS'
+
                 PureCN_list.append({"ID": sample_id, 'purity_PureCN': purity_val})
             else:
                 PureCN_list.append({"ID": sample_id, 'purity_PureCN': pd.NA})
@@ -117,21 +130,74 @@ class TumorPurityComparison:
 
         # Manteniamo la protezione anti-crash di Pandas
         self.df_tools['PureCN'] = pd.DataFrame(PureCN_list, columns=["ID", "purity_PureCN"])
-        print(f"PureCN Data loaded: {len(self.df_tools['PureCN'])} samples\n")
+        print(f"PureCN Data loaded: {len(self.df_tools['PureCN'])} samples (Failed: {len(self.failed_samples)})\n")
 
 
-    def merge_and_save(self): 
-        """Merges the flow citometry and all tool results on the ID column"""
+    def merge_and_save(self):
+        """Merges the flow citometry and all tool results on the ID column, filtering out failed samples"""
         self.df_merged = self.df_flow.copy()
-        
+
         for tool_name, df_tool in self.df_tools.items():
             if df_tool is not None and not df_tool.empty:
                 self.df_merged = pd.merge(self.df_merged, df_tool, on='ID', how='left')
-        
+
+        # Filter out failed samples (those with NA PureCN purity or marked as FAIL in quality_flag)
+        initial_count = len(self.df_merged)
+        self.df_merged = self.df_merged[
+            (self.df_merged['purity_PureCN'].notna()) &
+            (self.df_merged['ID'].isin(self.failed_samples) == False)
+        ]
+        final_count = len(self.df_merged)
+        filtered_count = initial_count - final_count
+
+        print(f"\n#### --- Quality Filter Summary --- ####")
+        print(f"Total samples before filtering: {initial_count}")
+        print(f"Samples with failed PureCN (insufficient variants): {len(self.failed_samples)}")
+        print(f"Samples in final cohort for analysis: {final_count}\n")
+
+        if len(self.failed_samples) > 0:
+            print(f"[FILTERED SAMPLES] {', '.join(self.failed_samples)}\n")
+
         self.output_dir.parent.mkdir(exist_ok=True, parents=True)
         self.df_merged.to_csv(self.output_dir, sep='\t', index=False)
         print(f"#### --- Results merged and saved to: {self.output_dir} --- ####\n")
-    
+
+    def save_quality_report(self):
+        """Save a quality filter report to accompany the final results"""
+        report_path = self.output_dir.parent / "quality_filter_report.txt"
+        with open(report_path, 'w') as f:
+            f.write("=" * 80 + "\n")
+            f.write("TUMOR PURITY COMPARISON - QUALITY FILTER REPORT\n")
+            f.write("=" * 80 + "\n\n")
+
+            f.write(f"Total samples processed: {len(self.manifest_df)}\n")
+            f.write(f"Samples excluded (PureCN failure): {len(self.failed_samples)}\n")
+            f.write(f"Samples in final cohort: {len(self.df_merged)}\n\n")
+
+            if len(self.failed_samples) > 0:
+                f.write("EXCLUDED SAMPLES (reason: insufficient somatic variants after PureCN filtering):\n")
+                f.write("-" * 80 + "\n")
+                for sample_id in self.failed_samples:
+                    f.write(f"  - {sample_id}\n")
+                f.write("\n")
+
+            f.write("INCLUDED SAMPLES:\n")
+            f.write("-" * 80 + "\n")
+            for sample_id in self.df_merged['ID'].tolist():
+                f.write(f"  - {sample_id}\n")
+            f.write("\n")
+
+            f.write("=" * 80 + "\n")
+            f.write("NOTE: Excluded samples had purity values marked as 'NA' in PureCN output,\n")
+            f.write("indicating insufficient high-quality variants for reliable segmentation (PSCBS crash).\n")
+            f.write("These samples are also excluded from ASCAT.sc and ichorCNA analysis\n")
+            f.write("to ensure statistical coherence of the comparison.\n")
+            f.write("=" * 80 + "\n")
+
+        print(f"Quality filter report saved to: {report_path}\n")
+
+
+        
 def main():
     parser = argparse.ArgumentParser(description="OOP Purity Comparison Parser")
     parser.add_argument("--manifest", required=True, help="Path to manifest.csv")
@@ -154,6 +220,7 @@ def main():
     tumor_comparison.load_ichor_results()
     tumor_comparison.load_PureCN_results()
     tumor_comparison.merge_and_save()
+    tumor_comparison.save_quality_report()
 
     # Esecuzione del modulo di visualizzazione
     try:

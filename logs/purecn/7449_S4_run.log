@@ -1,0 +1,79 @@
+During startup - Warning messages:
+1: Setting LC_TIME failed, using "C" 
+2: Setting LC_MONETARY failed, using "C" 
+3: Setting LC_PAPER failed, using "C" 
+4: Setting LC_MEASUREMENT failed, using "C" 
+WARN [2026-06-09 17:10:08] Deprecated arguments, use --post-optimize instead.
+[1] "/mnt/drive02/Tumor_purity_pipeline/results/purecn/7449_S4"
+INFO [2026-06-09 17:10:08] Loading PureCN 2.10.0...
+INFO [2026-06-09 17:10:09] Using BiocParallel MulticoreParam backend with 4 cores.
+INFO [2026-06-09 17:10:09] ------------------------------------------------------------
+INFO [2026-06-09 17:10:09] PureCN 2.10.0
+INFO [2026-06-09 17:10:09] ------------------------------------------------------------
+INFO [2026-06-09 17:10:09] Arguments: -tumor.coverage.file /mnt/drive02/Tumor_purity_pipeline/results/purecn/coverage/7449_S4/7449_S4_coverage.txt.gz -log.ratio  -seg.file  -vcf.file /mnt/drive02/UMA/run_71/Mutect2/mutect2_7449_S4.vcf.gz -genome hg19 -sex ? -args.setPriorVcf 6 -args.setMappingBiasVcf NULL -args.filterIntervals 100,0.05 -args.segmentation 0.005,NULL, -sampleid 7449_S4 -min.ploidy 1.4 -max.ploidy 6 -max.non.clonal 0.2 -max.homozygous.loss 0.05,1e+07 -log.ratio.calibration 0.1 -model.homozygous FALSE -error 0.001 -interval.file resources/purecn_assets/baits_optimized_hg19.txt -min.logr.sdev 0.15 -max.segments 300 -plot.cnv TRUE -vcf.field.prefix PureCN. -cosmic.vcf.file  -DB.info.flag DB -POPAF.info.field POP_AF -Cosmic.CNT.info.field Cosmic.CNT -model betabin -post.optimize TRUE -log.file results/purecn/7449_S4/7449_S4.log -normal.coverage.file <data> -normalDB <data> -args.filterVcf <data> -fun.segmentation <data> -test.num.copy <data> -test.purity <data> -speedup.heuristics <data> -BPPARAM <data>
+INFO [2026-06-09 17:10:09] Using BiocParallel for parallel optimization.
+INFO [2026-06-09 17:10:09] Loading coverage files...
+INFO [2026-06-09 17:10:09] Mean target coverages: 730X (tumor) 746X (normal).
+WARN [2026-06-09 17:10:09] Allosome coverage missing, cannot determine sex.
+WARN [2026-06-09 17:10:09] Allosome coverage missing, cannot determine sex.
+INFO [2026-06-09 17:10:10] Removing 4 low/high GC targets.
+INFO [2026-06-09 17:10:10] Removing 13 intervals excluded in normalDB.
+INFO [2026-06-09 17:10:10] normalDB provided. Setting minimum coverage for segmentation to 0.0015X.
+INFO [2026-06-09 17:10:10] Removing 72 low coverage (< 0.0015X) intervals.
+INFO [2026-06-09 17:10:10] Using 1701 intervals (1701 on-target, 0 off-target).
+INFO [2026-06-09 17:10:10] No off-target intervals. If this is hybrid-capture data, consider adding them.
+INFO [2026-06-09 17:10:10] AT/GC dropout: 0.92 (tumor), 0.94 (normal), 1.00 (coverage log-ratio). 
+INFO [2026-06-09 17:10:10] High GC-bias in normal and/or tumor coverage.
+INFO [2026-06-09 17:10:10] Loading VCF...
+INFO [2026-06-09 17:10:11] Found 589 variants in VCF file.
+INFO [2026-06-09 17:10:11] Removing 99 triallelic sites.
+INFO [2026-06-09 17:10:11] Maximum of POPAF INFO is > 1, assuming -log10 scaled values
+WARN [2026-06-09 17:10:11] vcf.file has no DB info field for membership in germline databases. Found and used valid population allele frequency > 0.001000 instead.
+INFO [2026-06-09 17:10:11] 366 (74.7%) variants annotated as likely germline (DB INFO flag).
+INFO [2026-06-09 17:10:11] 7449_S4 is tumor in VCF file.
+INFO [2026-06-09 17:10:11] 0 homozygous and 1 heterozygous variants on chrX.
+INFO [2026-06-09 17:10:11] Sex from VCF: F (Fisher's p-value: 1, odds-ratio: 0.00).
+INFO [2026-06-09 17:10:11] Detected MuTect2 VCF.
+INFO [2026-06-09 17:10:11] Removing 0 Mutect2 calls due to blacklisted failure reasons.
+WARN [2026-06-09 17:10:11] Many variants removed by min.base.quality (25) filter. You might want to lower the cutoff.
+INFO [2026-06-09 17:10:11] Removing 428 low quality variants with non-offset BQ < 25.
+INFO [2026-06-09 17:10:11] Base quality scores range from 24 to 37 (offset by 1)
+INFO [2026-06-09 17:10:11] Minimum number of supporting reads ranges from 2 to 11, depending on coverage and BQS.
+INFO [2026-06-09 17:10:12] Initial testing for significant sample cross-contamination: maybe
+INFO [2026-06-09 17:10:12] Removing 35 variants with AF < 0.030 or AF >= 0.970 or insufficient supporting reads or depth < 15.
+INFO [2026-06-09 17:10:12] Total size of targeted genomic region: 0.38Mb (0.50Mb with 50bp padding).
+INFO [2026-06-09 17:10:12] 0.9% of targets contain variants.
+INFO [2026-06-09 17:10:12] Removing 11 variants outside intervals.
+INFO [2026-06-09 17:10:12] Setting somatic prior probabilities for likely germline hits to 0.000500 or to 0.500000 otherwise.
+INFO [2026-06-09 17:10:12] VCF does not contain somatic status. For best results, consider providing mapping.bias.file when matched normals are not available.
+INFO [2026-06-09 17:10:12] Excluding 4 novel or poor quality variants from segmentation.
+INFO [2026-06-09 17:10:12] Sample sex: ?
+INFO [2026-06-09 17:10:12] Segmenting data...
+INFO [2026-06-09 17:10:12] Interval weights found, will use weighted PSCBS.
+INFO [2026-06-09 17:10:12] MAPD of 11 allelic fractions: 0.08 (0.08 adjusted).
+INFO [2026-06-09 17:10:12] Very clean log-ratios, will increase default undo.SD parameter by a factor of 1.8.
+INFO [2026-06-09 17:10:12] Setting undo.SD parameter to 0.900000.
+INFO [2026-06-09 17:10:18] Setting prune.hclust.h parameter to 0.100000.
+INFO [2026-06-09 17:10:18] Found 32 segments with median size of 51.21Mb.
+INFO [2026-06-09 17:10:19] Using 16 variants.
+INFO [2026-06-09 17:10:19] Mean standard deviation of log-ratios: 0.15 (MAPD: 0.07)
+INFO [2026-06-09 17:10:19] 2D-grid search of purity and ploidy...
+FATAL [2026-06-09 17:10:20] Cannot find valid purity/ploidy solution. This happens when input 
+
+FATAL [2026-06-09 17:10:20] segmentations are garbage, most likely due to a catastrophic sample QC 
+
+FATAL [2026-06-09 17:10:20] failure. Re-check standard QC metrics for this sample. 
+
+FATAL [2026-06-09 17:10:20]  
+
+FATAL [2026-06-09 17:10:20] This is most likely a user error due to invalid input data or 
+
+FATAL [2026-06-09 17:10:20] parameters (PureCN 2.10.0). 
+
+Error: Cannot find valid purity/ploidy solution. This happens when input
+segmentations are garbage, most likely due to a catastrophic sample QC
+failure. Re-check standard QC metrics for this sample.
+
+This is most likely a user error due to invalid input data or
+parameters (PureCN 2.10.0).
+Execution halted

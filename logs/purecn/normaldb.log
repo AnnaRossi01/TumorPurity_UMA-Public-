@@ -3,27 +3,23 @@ During startup - Warning messages:
 2: Setting LC_MONETARY failed, using "C" 
 3: Setting LC_PAPER failed, using "C" 
 4: Setting LC_MEASUREMENT failed, using "C" 
-INFO [2026-06-04 11:41:32] Loading PureCN 2.10.0...
-INFO [2026-06-04 11:41:32] Creating normalDB...
-INFO [2026-06-04 11:41:36] Recommended minimum off-target width is 190000 compared to 199231 currently available.
-WARN [2026-06-04 11:41:36] Allosome coverage missing, cannot determine sex.
-WARN [2026-06-04 11:41:36] Allosome coverage missing, cannot determine sex.
-WARN [2026-06-04 11:41:36] Allosome coverage missing, cannot determine sex.
-WARN [2026-06-04 11:41:36] Allosome coverage missing, cannot determine sex.
-WARN [2026-06-04 11:41:36] Allosome coverage missing, cannot determine sex.
-WARN [2026-06-04 11:41:36] Allosome coverage missing, cannot determine sex.
-WARN [2026-06-04 11:41:36] Allosome coverage missing, cannot determine sex.
-WARN [2026-06-04 11:41:36] Allosome coverage missing, cannot determine sex.
-WARN [2026-06-04 11:41:36] Allosome coverage missing, cannot determine sex.
-WARN [2026-06-04 11:41:36] Allosome coverage missing, cannot determine sex.
-WARN [2026-06-04 11:41:36] Allosome coverage missing, cannot determine sex.
-WARN [2026-06-04 11:41:36] Allosome coverage missing, cannot determine sex.
-WARN [2026-06-04 11:41:36] Allosome coverage missing, cannot determine sex.
-WARN [2026-06-04 11:41:36] Allosome coverage missing, cannot determine sex.
-WARN [2026-06-04 11:41:36] Allosome coverage missing, cannot determine sex.
-WARN [2026-06-04 11:41:36] Allosome coverage missing, cannot determine sex.
-INFO [2026-06-04 11:41:36] Processing on-target regions...
-INFO [2026-06-04 11:41:37] Removing 15 intervals with low coverage in normalDB.
-INFO [2026-06-04 11:41:37] Processing off-target regions...
-INFO [2026-06-04 11:41:37] Removing 30 intervals with low coverage in normalDB.
-INFO [2026-06-04 11:41:37] Removing 1 intervals with zero coverage in more than 3% of normalDB.
+INFO [2026-06-09 16:46:47] Loading PureCN 2.10.0...
+INFO [2026-06-09 16:46:47] Creating normalDB...
+WARN [2026-06-09 16:46:50] Allosome coverage missing, cannot determine sex.
+WARN [2026-06-09 16:46:50] Allosome coverage missing, cannot determine sex.
+WARN [2026-06-09 16:46:50] Allosome coverage missing, cannot determine sex.
+WARN [2026-06-09 16:46:50] Allosome coverage missing, cannot determine sex.
+WARN [2026-06-09 16:46:50] Allosome coverage missing, cannot determine sex.
+WARN [2026-06-09 16:46:50] Allosome coverage missing, cannot determine sex.
+WARN [2026-06-09 16:46:50] Allosome coverage missing, cannot determine sex.
+WARN [2026-06-09 16:46:50] Allosome coverage missing, cannot determine sex.
+WARN [2026-06-09 16:46:50] Allosome coverage missing, cannot determine sex.
+WARN [2026-06-09 16:46:50] Allosome coverage missing, cannot determine sex.
+WARN [2026-06-09 16:46:50] Allosome coverage missing, cannot determine sex.
+WARN [2026-06-09 16:46:51] Allosome coverage missing, cannot determine sex.
+WARN [2026-06-09 16:46:51] Allosome coverage missing, cannot determine sex.
+WARN [2026-06-09 16:46:51] Allosome coverage missing, cannot determine sex.
+WARN [2026-06-09 16:46:51] Allosome coverage missing, cannot determine sex.
+WARN [2026-06-09 16:46:51] Allosome coverage missing, cannot determine sex.
+INFO [2026-06-09 16:46:51] Processing on-target regions...
+INFO [2026-06-09 16:46:51] Removing 16 intervals with low coverage in normalDB.

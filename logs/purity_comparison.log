@@ -1,21 +1,46 @@
 
+[ATTENZIONE] Trovati 1 campioni duplicati nel manifest.csv:
+['7449_S4']
+Rimozione dei duplicati per prevenire la 'Merge Explosion'...
+
+
 #### --- Loading Flow Cytometry --- ####
 
-Flow Cytometry Data loaded: 5 samples
+Flow Cytometry Data loaded: 124 samples
 
 #### --- Loading ASCAT.sc results --- ####
 
-ASCAT.sc Data loaded: 5 samples
+ASCAT.sc Data loaded: 124 samples
 
 #### --- Loading ichorCNA results --- ####
 
-ichorCNA Data loaded: 5 samples
+ichorCNA Data loaded: 124 samples
 
 #### --- Loading PureCN results --- ####
 
-PureCN Data loaded: 5 samples
+  [FILTERED] PureCN failed for 6947_S7: insufficient somatic variants (likely PSCBS crash)
+  [FILTERED] PureCN failed for 6773_S3: insufficient somatic variants (likely PSCBS crash)
+  [FILTERED] PureCN failed for 6940_S2: insufficient somatic variants (likely PSCBS crash)
+  [FILTERED] PureCN failed for 6975_S4: insufficient somatic variants (likely PSCBS crash)
+  [FILTERED] PureCN failed for 6912_S2: insufficient somatic variants (likely PSCBS crash)
+  [FILTERED] PureCN failed for 7229_S3: insufficient somatic variants (likely PSCBS crash)
+  [FILTERED] PureCN failed for 7233_S7: insufficient somatic variants (likely PSCBS crash)
+  [FILTERED] PureCN failed for 7035_S2: insufficient somatic variants (likely PSCBS crash)
+  [FILTERED] PureCN failed for 7090_S4: insufficient somatic variants (likely PSCBS crash)
+  [FILTERED] PureCN failed for 7175_S8: insufficient somatic variants (likely PSCBS crash)
+  [FILTERED] PureCN failed for 7414_S5: insufficient somatic variants (likely PSCBS crash)
+PureCN Data loaded: 124 samples (Failed: 11)
+
+
+#### --- Quality Summary --- ####
+Total samples analyzed in the cohort: 124
+Samples exhibiting non-convergence (NA) in PureCN: 11
+
+[NOTE] The 11 samples lacking PureCN convergence are kept in the dataset to accurately evaluate the robustness of ASCAT.sc and IchorCNA.
 
 #### --- Results merged and saved to: results/purity_comparison/purity_comparison.csv --- ####
+
+Quality filter report saved to: results/purity_comparison/quality_filter_report.txt
 
 ----------------------------------------------------------------------------------------------------
 

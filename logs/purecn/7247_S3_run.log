@@ -3,57 +3,226 @@ During startup - Warning messages:
 2: Setting LC_MONETARY failed, using "C" 
 3: Setting LC_PAPER failed, using "C" 
 4: Setting LC_MEASUREMENT failed, using "C" 
-WARN [2026-06-09 17:58:51] Deprecated arguments, use --post-optimize instead.
+WARN [2026-06-15 21:25:17] Deprecated arguments, use --post-optimize instead.
 [1] "/mnt/drive02/Tumor_purity_pipeline/results/purecn/7247_S3"
-INFO [2026-06-09 17:58:51] Loading PureCN 2.10.0...
-INFO [2026-06-09 17:58:55] Using BiocParallel MulticoreParam backend with 4 cores.
-INFO [2026-06-09 17:58:55] ------------------------------------------------------------
-INFO [2026-06-09 17:58:55] PureCN 2.10.0
-INFO [2026-06-09 17:58:55] ------------------------------------------------------------
-INFO [2026-06-09 17:58:55] Arguments: -tumor.coverage.file /mnt/drive02/Tumor_purity_pipeline/results/purecn/coverage/7247_S3/7247_S3_coverage.txt.gz -log.ratio  -seg.file  -vcf.file /mnt/drive02/UMA/run_59/Mutect2/mutect2_7247_S3.vcf.gz -genome hg19 -sex ? -args.setPriorVcf 6 -args.setMappingBiasVcf NULL -args.filterIntervals 100,0.05 -args.segmentation 0.005,NULL, -sampleid 7247_S3 -min.ploidy 1.4 -max.ploidy 6 -max.non.clonal 0.2 -max.homozygous.loss 0.05,1e+07 -log.ratio.calibration 0.1 -model.homozygous FALSE -error 0.001 -interval.file resources/purecn_assets/baits_optimized_hg19.txt -min.logr.sdev 0.15 -max.segments 300 -plot.cnv TRUE -vcf.field.prefix PureCN. -cosmic.vcf.file  -DB.info.flag DB -POPAF.info.field POP_AF -Cosmic.CNT.info.field Cosmic.CNT -model betabin -post.optimize TRUE -log.file results/purecn/7247_S3/7247_S3.log -normal.coverage.file <data> -normalDB <data> -args.filterVcf <data> -fun.segmentation <data> -test.num.copy <data> -test.purity <data> -speedup.heuristics <data> -BPPARAM <data>
-INFO [2026-06-09 17:58:55] Using BiocParallel for parallel optimization.
-INFO [2026-06-09 17:58:55] Loading coverage files...
-INFO [2026-06-09 17:58:55] Mean target coverages: 1127X (tumor) 1165X (normal).
-WARN [2026-06-09 17:58:55] Allosome coverage missing, cannot determine sex.
-WARN [2026-06-09 17:58:55] Allosome coverage missing, cannot determine sex.
-INFO [2026-06-09 17:58:56] Removing 4 low/high GC targets.
-INFO [2026-06-09 17:58:56] Removing 13 intervals excluded in normalDB.
-INFO [2026-06-09 17:58:56] normalDB provided. Setting minimum coverage for segmentation to 0.0015X.
-INFO [2026-06-09 17:58:56] Removing 72 low coverage (< 0.0015X) intervals.
-INFO [2026-06-09 17:58:56] Using 1701 intervals (1701 on-target, 0 off-target).
-INFO [2026-06-09 17:58:57] No off-target intervals. If this is hybrid-capture data, consider adding them.
-INFO [2026-06-09 17:58:57] AT/GC dropout: 0.89 (tumor), 0.89 (normal), 1.02 (coverage log-ratio). 
-INFO [2026-06-09 17:58:57] High GC-bias in normal and/or tumor coverage.
-INFO [2026-06-09 17:58:57] Loading VCF...
-INFO [2026-06-09 17:58:58] Found 751 variants in VCF file.
-INFO [2026-06-09 17:58:58] Removing 137 triallelic sites.
-INFO [2026-06-09 17:58:58] Maximum of POPAF INFO is > 1, assuming -log10 scaled values
-WARN [2026-06-09 17:58:58] vcf.file has no DB info field for membership in germline databases. Found and used valid population allele frequency > 0.001000 instead.
-INFO [2026-06-09 17:58:58] 434 (70.7%) variants annotated as likely germline (DB INFO flag).
-INFO [2026-06-09 17:58:58] 7247_S3 is tumor in VCF file.
-INFO [2026-06-09 17:58:59] No variants on chrX in VCF.
-INFO [2026-06-09 17:58:59] Detected MuTect2 VCF.
-INFO [2026-06-09 17:58:59] Removing 0 Mutect2 calls due to blacklisted failure reasons.
-WARN [2026-06-09 17:58:59] Many variants removed by min.base.quality (25) filter. You might want to lower the cutoff.
-INFO [2026-06-09 17:58:59] Removing 529 low quality variants with non-offset BQ < 25.
-INFO [2026-06-09 17:58:59] Base quality scores range from 24 to 35 (offset by 1)
-INFO [2026-06-09 17:58:59] Minimum number of supporting reads ranges from 3 to 15, depending on coverage and BQS.
-INFO [2026-06-09 17:59:00] Initial testing for significant sample cross-contamination: maybe
-INFO [2026-06-09 17:59:00] Removing 43 variants with AF < 0.030 or AF >= 0.970 or insufficient supporting reads or depth < 15.
-INFO [2026-06-09 17:59:00] Total size of targeted genomic region: 0.38Mb (0.50Mb with 50bp padding).
-INFO [2026-06-09 17:59:01] 1.1% of targets contain variants.
-INFO [2026-06-09 17:59:01] Removing 10 variants outside intervals.
-INFO [2026-06-09 17:59:01] Setting somatic prior probabilities for likely germline hits to 0.000500 or to 0.500000 otherwise.
-INFO [2026-06-09 17:59:01] VCF does not contain somatic status. For best results, consider providing mapping.bias.file when matched normals are not available.
-INFO [2026-06-09 17:59:01] Excluding 8 novel or poor quality variants from segmentation.
-INFO [2026-06-09 17:59:01] Sample sex: ?
-INFO [2026-06-09 17:59:01] Segmenting data...
-INFO [2026-06-09 17:59:02] Interval weights found, will use weighted PSCBS.
-INFO [2026-06-09 17:59:02] MAPD of 19 allelic fractions: 0.03 (0.03 adjusted).
-INFO [2026-06-09 17:59:02] Very clean log-ratios, will increase default undo.SD parameter by a factor of 1.5.
-INFO [2026-06-09 17:59:02] Setting undo.SD parameter to 0.750000.
-INFO [2026-06-09 17:59:18] Setting prune.hclust.h parameter to 0.200000.
-INFO [2026-06-09 17:59:19] Found 47 segments with median size of 28.30Mb.
-INFO [2026-06-09 17:59:20] Using 32 variants.
-INFO [2026-06-09 17:59:20] Mean standard deviation of log-ratios: 0.15 (MAPD: 0.08)
-INFO [2026-06-09 17:59:20] 2D-grid search of purity and ploidy...
+INFO [2026-06-15 21:25:17] Loading PureCN 2.10.0...
+INFO [2026-06-15 21:25:18] Using BiocParallel MulticoreParam backend with 4 cores.
+INFO [2026-06-15 21:25:18] ------------------------------------------------------------
+INFO [2026-06-15 21:25:18] PureCN 2.10.0
+INFO [2026-06-15 21:25:18] ------------------------------------------------------------
+INFO [2026-06-15 21:25:18] Arguments: -tumor.coverage.file /mnt/drive02/Tumor_purity_pipeline/results/purecn/coverage/7247_S3/7247_S3_coverage.txt.gz -log.ratio  -seg.file  -vcf.file /mnt/drive02/UMA/run_59/Mutect2/mutect2_7247_S3.vcf.gz -genome hg19 -sex ? -args.setPriorVcf 6 -args.setMappingBiasVcf NULL -args.filterIntervals 100,0.05 -args.segmentation 0.005,NULL, -sampleid 7247_S3 -min.ploidy 1.4 -max.ploidy 6 -max.non.clonal 0.2 -max.homozygous.loss 0.05,1e+07 -log.ratio.calibration 0.1 -model.homozygous FALSE -error 0.001 -interval.file resources/purecn_assets/baits_optimized_hg19.txt -min.logr.sdev 0.15 -max.segments 300 -plot.cnv TRUE -vcf.field.prefix PureCN. -cosmic.vcf.file  -DB.info.flag DB -POPAF.info.field POP_AF -Cosmic.CNT.info.field Cosmic.CNT -model betabin -post.optimize TRUE -log.file results/purecn/7247_S3/7247_S3.log -normal.coverage.file <data> -normalDB <data> -args.filterVcf <data> -fun.segmentation <data> -test.num.copy <data> -test.purity <data> -speedup.heuristics <data> -BPPARAM <data>
+INFO [2026-06-15 21:25:18] Using BiocParallel for parallel optimization.
+INFO [2026-06-15 21:25:18] Loading coverage files...
+INFO [2026-06-15 21:25:18] Mean target coverages: 1118X (tumor) 1145X (normal).
+WARN [2026-06-15 21:25:18] Allosome coverage missing, cannot determine sex.
+WARN [2026-06-15 21:25:19] Allosome coverage missing, cannot determine sex.
+INFO [2026-06-15 21:25:19] Removing 32 low/high GC targets.
+INFO [2026-06-15 21:25:19] Removing 39 intervals excluded in normalDB.
+INFO [2026-06-15 21:25:19] normalDB provided. Setting minimum coverage for segmentation to 0.0015X.
+INFO [2026-06-15 21:25:19] Removing 48 low count (< 100 total reads) intervals.
+INFO [2026-06-15 21:25:19] Removing 822 low coverage (< 0.0015X) intervals.
+INFO [2026-06-15 21:25:19] Using 14460 intervals (1605 on-target, 12855 off-target).
+INFO [2026-06-15 21:25:19] Ratio of mean on-target vs. off-target read counts: 7.70
+INFO [2026-06-15 21:25:19] Mean off-target bin size: 197497
+INFO [2026-06-15 21:25:19] AT/GC dropout: 0.88 (tumor), 0.87 (normal), 1.02 (coverage log-ratio). 
+INFO [2026-06-15 21:25:19] High GC-bias in normal and/or tumor coverage.
+INFO [2026-06-15 21:25:19] Loading VCF...
+INFO [2026-06-15 21:25:20] Found 751 variants in VCF file.
+INFO [2026-06-15 21:25:20] Removing 137 triallelic sites.
+INFO [2026-06-15 21:25:20] Maximum of POPAF INFO is > 1, assuming -log10 scaled values
+WARN [2026-06-15 21:25:20] vcf.file has no DB info field for membership in germline databases. Found and used valid population allele frequency > 0.001000 instead.
+INFO [2026-06-15 21:25:20] 434 (70.7%) variants annotated as likely germline (DB INFO flag).
+INFO [2026-06-15 21:25:20] 7247_S3 is tumor in VCF file.
+INFO [2026-06-15 21:25:20] No variants on chrX in VCF.
+INFO [2026-06-15 21:25:20] Detected MuTect2 VCF.
+INFO [2026-06-15 21:25:20] Removing 0 Mutect2 calls due to blacklisted failure reasons.
+WARN [2026-06-15 21:25:20] Many variants removed by min.base.quality (25) filter. You might want to lower the cutoff.
+INFO [2026-06-15 21:25:20] Removing 529 low quality variants with non-offset BQ < 25.
+INFO [2026-06-15 21:25:20] Base quality scores range from 24 to 35 (offset by 1)
+INFO [2026-06-15 21:25:20] Minimum number of supporting reads ranges from 3 to 15, depending on coverage and BQS.
+INFO [2026-06-15 21:25:20] Initial testing for significant sample cross-contamination: maybe
+INFO [2026-06-15 21:25:21] Removing 43 variants with AF < 0.030 or AF >= 0.970 or insufficient supporting reads or depth < 15.
+INFO [2026-06-15 21:25:21] Total size of targeted genomic region: 0.35Mb (0.48Mb with 50bp padding).
+INFO [2026-06-15 21:25:21] 0.7% of targets contain variants.
+INFO [2026-06-15 21:25:21] Removing 20 variants outside intervals.
+INFO [2026-06-15 21:25:21] Setting somatic prior probabilities for likely germline hits to 0.000500 or to 0.500000 otherwise.
+INFO [2026-06-15 21:25:21] VCF does not contain somatic status. For best results, consider providing mapping.bias.file when matched normals are not available.
+INFO [2026-06-15 21:25:21] Excluding 6 novel or poor quality variants from segmentation.
+INFO [2026-06-15 21:25:21] Sample sex: ?
+INFO [2026-06-15 21:25:21] Segmenting data...
+INFO [2026-06-15 21:25:21] Interval weights found, will use weighted PSCBS.
+INFO [2026-06-15 21:25:21] MAPD of 14 allelic fractions: 0.01 (0.01 adjusted).
+INFO [2026-06-15 21:25:21] Setting undo.SD parameter to 0.500000.
+INFO [2026-06-15 21:25:21] On-target much cleaner than off-target, finding on-target breakpoints first...
+INFO [2026-06-15 21:25:21] Using 1456 high quality (out of 1612) on-target intervals for initial breakpoint calculation.
+INFO [2026-06-15 21:25:27] Setting prune.hclust.h parameter to 0.100000.
+INFO [2026-06-15 21:25:37] Setting prune.hclust.h parameter to 0.100000.
+INFO [2026-06-15 21:25:38] Found 92 segments with median size of 11.84Mb.
+INFO [2026-06-15 21:25:38] Using 22 variants.
+INFO [2026-06-15 21:25:38] Mean standard deviation of log-ratios: 0.18 (MAPD: 0.16)
+INFO [2026-06-15 21:25:38] Mean standard deviation of on-target log-ratios only: 0.09 (MAPD: 0.08)
+INFO [2026-06-15 21:25:38] Mean standard deviation of off-target log-ratios only: 0.19 (MAPD: 0.18)
+INFO [2026-06-15 21:25:38] 2D-grid search of purity and ploidy...
+INFO [2026-06-15 21:25:43] Local optima: 0.38/2.8, 0.58/4.4, 0.58/3.2, 0.33/3.4, 0.92/5.8,
+0.75/2.8, 0.19/2.6, 0.35/2.4, 0.17/2.2, 0.55/2.6, 0.23/1.8, 0.55/4.8,
+0.78/6, 0.42/1.6, 0.17/2, 0.55/2, 0.95/3, 0.38/2, 0.62/1.4, 0.95/2
+INFO [2026-06-15 21:25:43] Testing local optimum 16/20 at purity 0.55 and total ploidy 2.00...
+INFO [2026-06-15 21:25:45] Testing local optimum 17/20 at purity 0.95 and total ploidy 3.00...
+INFO [2026-06-15 21:25:46] Testing local optimum 18/20 at purity 0.38 and total ploidy 2.00...
+INFO [2026-06-15 21:25:48] Testing local optimum 19/20 at purity 0.62 and total ploidy 1.40...
+INFO [2026-06-15 21:25:49] Recalibrating log-ratios...
+INFO [2026-06-15 21:25:49] Testing local optimum 19/20 at purity 0.62 and total ploidy 1.40...
+INFO [2026-06-15 21:25:49] Recalibrating log-ratios...
+INFO [2026-06-15 21:25:49] Testing local optimum 19/20 at purity 0.62 and total ploidy 1.40...
+INFO [2026-06-15 21:25:49] Recalibrating log-ratios...
+INFO [2026-06-15 21:25:49] Testing local optimum 19/20 at purity 0.62 and total ploidy 1.40...
+INFO [2026-06-15 21:25:50] Testing local optimum 20/20 at purity 0.95 and total ploidy 2.00...
+
+INFO [2026-06-15 21:25:43] Testing local optimum 6/20 at purity 0.75 and total ploidy 2.80...
+INFO [2026-06-15 21:25:46] Testing local optimum 7/20 at purity 0.19 and total ploidy 2.60...
+INFO [2026-06-15 21:25:48] Testing local optimum 8/20 at purity 0.35 and total ploidy 2.40...
+INFO [2026-06-15 21:25:50] Testing local optimum 9/20 at purity 0.17 and total ploidy 2.20...
+INFO [2026-06-15 21:25:52] Testing local optimum 10/20 at purity 0.55 and total ploidy 2.60...
+
+INFO [2026-06-15 21:25:43] Testing local optimum 1/20 at purity 0.38 and total ploidy 2.80...
+INFO [2026-06-15 21:25:46] Testing local optimum 2/20 at purity 0.58 and total ploidy 4.40...
+INFO [2026-06-15 21:25:48] Testing local optimum 3/20 at purity 0.58 and total ploidy 3.20...
+INFO [2026-06-15 21:25:51] Testing local optimum 4/20 at purity 0.33 and total ploidy 3.40...
+INFO [2026-06-15 21:25:54] Testing local optimum 5/20 at purity 0.92 and total ploidy 5.80...
+
+INFO [2026-06-15 21:25:43] Testing local optimum 11/20 at purity 0.23 and total ploidy 1.80...
+INFO [2026-06-15 21:25:44] Recalibrating log-ratios...
+INFO [2026-06-15 21:25:44] Testing local optimum 11/20 at purity 0.23 and total ploidy 1.80...
+INFO [2026-06-15 21:25:45] Recalibrating log-ratios...
+INFO [2026-06-15 21:25:45] Testing local optimum 11/20 at purity 0.23 and total ploidy 1.80...
+INFO [2026-06-15 21:25:45] Recalibrating log-ratios...
+INFO [2026-06-15 21:25:45] Testing local optimum 11/20 at purity 0.23 and total ploidy 1.80...
+INFO [2026-06-15 21:25:46] Testing local optimum 12/20 at purity 0.55 and total ploidy 4.80...
+INFO [2026-06-15 21:25:46] Recalibrating log-ratios...
+INFO [2026-06-15 21:25:46] Testing local optimum 12/20 at purity 0.55 and total ploidy 4.80...
+INFO [2026-06-15 21:25:48] Recalibrating log-ratios...
+INFO [2026-06-15 21:25:48] Testing local optimum 12/20 at purity 0.55 and total ploidy 4.80...
+INFO [2026-06-15 21:25:50] Recalibrating log-ratios...
+INFO [2026-06-15 21:25:50] Testing local optimum 12/20 at purity 0.55 and total ploidy 4.80...
+INFO [2026-06-15 21:25:53] Testing local optimum 13/20 at purity 0.78 and total ploidy 6.00...
+INFO [2026-06-15 21:25:53] Recalibrating log-ratios...
+INFO [2026-06-15 21:25:53] Testing local optimum 13/20 at purity 0.78 and total ploidy 6.00...
+INFO [2026-06-15 21:25:56] Recalibrating log-ratios...
+INFO [2026-06-15 21:25:56] Testing local optimum 13/20 at purity 0.78 and total ploidy 6.00...
+INFO [2026-06-15 21:25:58] Recalibrating log-ratios...
+INFO [2026-06-15 21:25:58] Testing local optimum 13/20 at purity 0.78 and total ploidy 6.00...
+INFO [2026-06-15 21:26:00] Testing local optimum 14/20 at purity 0.42 and total ploidy 1.60...
+INFO [2026-06-15 21:26:00] Recalibrating log-ratios...
+INFO [2026-06-15 21:26:00] Testing local optimum 14/20 at purity 0.42 and total ploidy 1.60...
+INFO [2026-06-15 21:26:01] Recalibrating log-ratios...
+INFO [2026-06-15 21:26:01] Testing local optimum 14/20 at purity 0.42 and total ploidy 1.60...
+INFO [2026-06-15 21:26:01] Recalibrating log-ratios...
+INFO [2026-06-15 21:26:01] Testing local optimum 14/20 at purity 0.42 and total ploidy 1.60...
+INFO [2026-06-15 21:26:02] Testing local optimum 15/20 at purity 0.17 and total ploidy 2.00...
+
+INFO [2026-06-15 21:26:03] Skipping 2 solutions that converged to the same optima.
+INFO [2026-06-15 21:26:03] Skipping 3 solutions exceeding max.non.clonal (0.20): 0.26/0.89, 0.45/0.93, 0.65/0.95 (purity/tumor ploidy)
+INFO [2026-06-15 21:26:03] Fitting variants with betabin model for local optimum 5/20...
+INFO [2026-06-15 21:26:03] Fitting variants for purity 0.72, tumor ploidy 6.00 and contamination 0.01.
+INFO [2026-06-15 21:26:05] Poor goodness-of-fit (0.748). Skipping post-optimization.
+INFO [2026-06-15 21:26:05] Optimized purity: 0.72
+INFO [2026-06-15 21:26:05] Fitting variants with betabin model for local optimum 6/20...
+INFO [2026-06-15 21:26:05] Fitting variants for purity 0.55, tumor ploidy 3.00 and contamination 0.01.
+INFO [2026-06-15 21:26:06] Poor goodness-of-fit (0.116). Skipping post-optimization.
+INFO [2026-06-15 21:26:06] Optimized purity: 0.55
+INFO [2026-06-15 21:26:06] Fitting variants with betabin model for local optimum 8/20...
+INFO [2026-06-15 21:26:06] Fitting variants for purity 0.15, tumor ploidy 2.92 and contamination 0.01.
+INFO [2026-06-15 21:26:07] Fitting variants for purity 0.16, tumor ploidy 2.92 and contamination 0.01.
+INFO [2026-06-15 21:26:08] Fitting variants for purity 0.17, tumor ploidy 2.92 and contamination 0.01.
+INFO [2026-06-15 21:26:09] Fitting variants for purity 0.18, tumor ploidy 2.92 and contamination 0.01.
+INFO [2026-06-15 21:26:10] Fitting variants for purity 0.19, tumor ploidy 2.92 and contamination 0.01.
+INFO [2026-06-15 21:26:11] Optimized purity: 0.15
+INFO [2026-06-15 21:26:11] Fitting variants with betabin model for local optimum 10/20...
+INFO [2026-06-15 21:26:11] Fitting variants for purity 0.36, tumor ploidy 3.00 and contamination 0.01.
+INFO [2026-06-15 21:26:12] Poor goodness-of-fit (0.639). Skipping post-optimization.
+INFO [2026-06-15 21:26:12] Optimized purity: 0.36
+
+INFO [2026-06-15 21:26:03] Fitting variants with betabin model for local optimum 17/20...
+INFO [2026-06-15 21:26:03] Fitting variants for purity 0.75, tumor ploidy 3.00 and contamination 0.01.
+INFO [2026-06-15 21:26:05] Fitting variants for purity 0.71, tumor ploidy 3.00 and contamination 0.01.
+INFO [2026-06-15 21:26:06] Fitting variants for purity 0.72, tumor ploidy 3.00 and contamination 0.01.
+INFO [2026-06-15 21:26:07] Fitting variants for purity 0.73, tumor ploidy 3.00 and contamination 0.01.
+INFO [2026-06-15 21:26:08] Fitting variants for purity 0.74, tumor ploidy 3.00 and contamination 0.01.
+INFO [2026-06-15 21:26:09] Fitting variants for purity 0.76, tumor ploidy 3.00 and contamination 0.01.
+INFO [2026-06-15 21:26:09] Fitting variants for purity 0.77, tumor ploidy 3.00 and contamination 0.01.
+INFO [2026-06-15 21:26:10] Fitting variants for purity 0.78, tumor ploidy 3.00 and contamination 0.01.
+INFO [2026-06-15 21:26:11] Fitting variants for purity 0.79, tumor ploidy 3.00 and contamination 0.01.
+INFO [2026-06-15 21:26:12] Optimized purity: 0.71
+INFO [2026-06-15 21:26:12] Fitting variants with betabin model for local optimum 18/20...
+INFO [2026-06-15 21:26:12] Fitting variants for purity 0.36, tumor ploidy 2.00 and contamination 0.01.
+INFO [2026-06-15 21:26:13] Poor goodness-of-fit (0.597). Skipping post-optimization.
+INFO [2026-06-15 21:26:13] Optimized purity: 0.36
+INFO [2026-06-15 21:26:13] Fitting variants with betabin model for local optimum 20/20...
+INFO [2026-06-15 21:26:13] Fitting variants for purity 0.95, tumor ploidy 2.00 and contamination 0.01.
+INFO [2026-06-15 21:26:14] Poor goodness-of-fit (0.000). Skipping post-optimization.
+INFO [2026-06-15 21:26:14] Optimized purity: 0.95
+
+INFO [2026-06-15 21:26:03] Fitting variants with betabin model for local optimum 1/20...
+INFO [2026-06-15 21:26:03] Fitting variants for purity 0.19, tumor ploidy 3.97 and contamination 0.01.
+INFO [2026-06-15 21:26:05] Fitting variants for purity 0.15, tumor ploidy 3.97 and contamination 0.01.
+INFO [2026-06-15 21:26:06] Fitting variants for purity 0.16, tumor ploidy 3.97 and contamination 0.01.
+INFO [2026-06-15 21:26:07] Fitting variants for purity 0.17, tumor ploidy 3.97 and contamination 0.01.
+INFO [2026-06-15 21:26:08] Fitting variants for purity 0.18, tumor ploidy 3.97 and contamination 0.01.
+INFO [2026-06-15 21:26:09] Fitting variants for purity 0.20, tumor ploidy 3.97 and contamination 0.01.
+INFO [2026-06-15 21:26:09] Fitting variants for purity 0.21, tumor ploidy 3.97 and contamination 0.01.
+INFO [2026-06-15 21:26:10] Fitting variants for purity 0.22, tumor ploidy 3.97 and contamination 0.01.
+INFO [2026-06-15 21:26:11] Fitting variants for purity 0.23, tumor ploidy 3.97 and contamination 0.01.
+INFO [2026-06-15 21:26:12] Optimized purity: 0.19
+INFO [2026-06-15 21:26:12] Fitting variants with betabin model for local optimum 2/20...
+INFO [2026-06-15 21:26:12] Fitting variants for purity 0.39, tumor ploidy 6.00 and contamination 0.01.
+INFO [2026-06-15 21:26:13] Rare karyotype solution. Skipping post-optimization.
+INFO [2026-06-15 21:26:13] Optimized purity: 0.39
+INFO [2026-06-15 21:26:13] Fitting variants with betabin model for local optimum 3/20...
+INFO [2026-06-15 21:26:13] Fitting variants for purity 0.39, tumor ploidy 4.00 and contamination 0.01.
+INFO [2026-06-15 21:26:14] Poor goodness-of-fit (0.688). Skipping post-optimization.
+INFO [2026-06-15 21:26:14] Optimized purity: 0.39
+INFO [2026-06-15 21:26:14] Fitting variants with betabin model for local optimum 4/20...
+INFO [2026-06-15 21:26:14] Fitting variants for purity 0.15, tumor ploidy 4.80 and contamination 0.01.
+INFO [2026-06-15 21:26:15] Rare karyotype solution. Skipping post-optimization.
+INFO [2026-06-15 21:26:15] Optimized purity: 0.15
+
+INFO [2026-06-15 21:26:03] Fitting variants with betabin model for local optimum 12/20...
+INFO [2026-06-15 21:26:03] Fitting variants for purity 0.27, tumor ploidy 4.00 and contamination 0.01.
+INFO [2026-06-15 21:26:05] Fitting variants for purity 0.23, tumor ploidy 4.00 and contamination 0.01.
+INFO [2026-06-15 21:26:06] Fitting variants for purity 0.24, tumor ploidy 4.00 and contamination 0.01.
+INFO [2026-06-15 21:26:07] Fitting variants for purity 0.25, tumor ploidy 4.00 and contamination 0.01.
+INFO [2026-06-15 21:26:08] Fitting variants for purity 0.26, tumor ploidy 4.00 and contamination 0.01.
+INFO [2026-06-15 21:26:09] Fitting variants for purity 0.28, tumor ploidy 4.00 and contamination 0.01.
+INFO [2026-06-15 21:26:10] Fitting variants for purity 0.29, tumor ploidy 4.00 and contamination 0.01.
+INFO [2026-06-15 21:26:11] Fitting variants for purity 0.30, tumor ploidy 4.00 and contamination 0.01.
+INFO [2026-06-15 21:26:12] Fitting variants for purity 0.31, tumor ploidy 4.00 and contamination 0.01.
+INFO [2026-06-15 21:26:13] Optimized purity: 0.31
+INFO [2026-06-15 21:26:13] Fitting variants with betabin model for local optimum 13/20...
+INFO [2026-06-15 21:26:13] Fitting variants for purity 0.29, tumor ploidy 1.40 and contamination 0.01.
+INFO [2026-06-15 21:26:14] Poor goodness-of-fit (0.744). Skipping post-optimization.
+INFO [2026-06-15 21:26:14] Optimized purity: 0.29
+INFO [2026-06-15 21:26:14] Fitting variants with betabin model for local optimum 15/20...
+INFO [2026-06-15 21:26:14] Fitting variants for purity 0.16, tumor ploidy 1.97 and contamination 0.01.
+INFO [2026-06-15 21:26:15] Fitting variants for purity 0.15, tumor ploidy 1.97 and contamination 0.01.
+INFO [2026-06-15 21:26:16] Fitting variants for purity 0.17, tumor ploidy 1.97 and contamination 0.01.
+INFO [2026-06-15 21:26:17] Fitting variants for purity 0.18, tumor ploidy 1.97 and contamination 0.01.
+INFO [2026-06-15 21:26:18] Fitting variants for purity 0.19, tumor ploidy 1.97 and contamination 0.01.
+INFO [2026-06-15 21:26:19] Fitting variants for purity 0.20, tumor ploidy 1.97 and contamination 0.01.
+INFO [2026-06-15 21:26:20] Optimized purity: 0.17
+INFO [2026-06-15 21:26:20] Fitting variants with betabin model for local optimum 16/20...
+INFO [2026-06-15 21:26:20] Fitting variants for purity 0.53, tumor ploidy 2.00 and contamination 0.01.
+INFO [2026-06-15 21:26:21] Poor goodness-of-fit (0.000). Skipping post-optimization.
+INFO [2026-06-15 21:26:21] Optimized purity: 0.53
+
+INFO [2026-06-15 21:26:21] Done.
+INFO [2026-06-15 21:26:21] ------------------------------------------------------------
+INFO [2026-06-15 21:26:21] Generating output files...
+There were 14 warnings (use warnings() to see them)
+INFO [2026-06-15 21:26:25] Tumor/normal noise ratio: 105.251
+WARN [2026-06-15 21:26:25] Extensive noise in tumor compared to normals.
+INFO [2026-06-15 21:26:25] Using BiocParallel for parallel optimization.
+Error in `$<-.data.frame`(`*tmp*`, "arm", value = "p") : 
+  replacement has 1 row, data has 0
+Calls: write.csv ... <Anonymous> -> .getArmLocations -> $<- -> $<-.data.frame
+Execution halted
+[SUCCESS] PureCN ha generato correttamente il file CSV.

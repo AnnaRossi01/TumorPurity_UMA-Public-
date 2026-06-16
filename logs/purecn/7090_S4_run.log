@@ -3,56 +3,60 @@ During startup - Warning messages:
 2: Setting LC_MONETARY failed, using "C" 
 3: Setting LC_PAPER failed, using "C" 
 4: Setting LC_MEASUREMENT failed, using "C" 
-WARN [2026-06-09 17:58:50] Deprecated arguments, use --post-optimize instead.
+WARN [2026-06-15 20:44:21] Deprecated arguments, use --post-optimize instead.
 [1] "/mnt/drive02/Tumor_purity_pipeline/results/purecn/7090_S4"
-INFO [2026-06-09 17:58:50] Loading PureCN 2.10.0...
-INFO [2026-06-09 17:58:54] Using BiocParallel MulticoreParam backend with 4 cores.
-INFO [2026-06-09 17:58:54] ------------------------------------------------------------
-INFO [2026-06-09 17:58:54] PureCN 2.10.0
-INFO [2026-06-09 17:58:54] ------------------------------------------------------------
-INFO [2026-06-09 17:58:54] Arguments: -tumor.coverage.file /mnt/drive02/Tumor_purity_pipeline/results/purecn/coverage/7090_S4/7090_S4_coverage.txt.gz -log.ratio  -seg.file  -vcf.file /mnt/drive02/UMA/run_58/Mutect2/mutect2_7090_S4.vcf.gz -genome hg19 -sex ? -args.setPriorVcf 6 -args.setMappingBiasVcf NULL -args.filterIntervals 100,0.05 -args.segmentation 0.005,NULL, -sampleid 7090_S4 -min.ploidy 1.4 -max.ploidy 6 -max.non.clonal 0.2 -max.homozygous.loss 0.05,1e+07 -log.ratio.calibration 0.1 -model.homozygous FALSE -error 0.001 -interval.file resources/purecn_assets/baits_optimized_hg19.txt -min.logr.sdev 0.15 -max.segments 300 -plot.cnv TRUE -vcf.field.prefix PureCN. -cosmic.vcf.file  -DB.info.flag DB -POPAF.info.field POP_AF -Cosmic.CNT.info.field Cosmic.CNT -model betabin -post.optimize TRUE -log.file results/purecn/7090_S4/7090_S4.log -normal.coverage.file <data> -normalDB <data> -args.filterVcf <data> -fun.segmentation <data> -test.num.copy <data> -test.purity <data> -speedup.heuristics <data> -BPPARAM <data>
-INFO [2026-06-09 17:58:54] Using BiocParallel for parallel optimization.
-INFO [2026-06-09 17:58:54] Loading coverage files...
-INFO [2026-06-09 17:58:54] Mean target coverages: 365X (tumor) 398X (normal).
-WARN [2026-06-09 17:58:54] Allosome coverage missing, cannot determine sex.
-WARN [2026-06-09 17:58:54] Allosome coverage missing, cannot determine sex.
-INFO [2026-06-09 17:58:56] Removing 1 intervals with missing log.ratio.
-INFO [2026-06-09 17:58:56] Removing 4 low/high GC targets.
-INFO [2026-06-09 17:58:56] Removing 13 intervals excluded in normalDB.
-INFO [2026-06-09 17:58:56] normalDB provided. Setting minimum coverage for segmentation to 0.0015X.
-INFO [2026-06-09 17:58:56] Removing 2 low count (< 100 total reads) intervals.
-INFO [2026-06-09 17:58:56] Removing 72 low coverage (< 0.0015X) intervals.
-INFO [2026-06-09 17:58:56] Using 1698 intervals (1698 on-target, 0 off-target).
-INFO [2026-06-09 17:58:56] No off-target intervals. If this is hybrid-capture data, consider adding them.
-INFO [2026-06-09 17:58:56] AT/GC dropout: 0.73 (tumor), 0.70 (normal), 1.03 (coverage log-ratio). 
-INFO [2026-06-09 17:58:56] High GC-bias in normal and/or tumor coverage.
-INFO [2026-06-09 17:58:56] Loading VCF...
-INFO [2026-06-09 17:58:57] Found 719 variants in VCF file.
-INFO [2026-06-09 17:58:57] Removing 71 triallelic sites.
-INFO [2026-06-09 17:58:57] Maximum of POPAF INFO is > 1, assuming -log10 scaled values
-WARN [2026-06-09 17:58:57] vcf.file has no DB info field for membership in germline databases. Found and used valid population allele frequency > 0.001000 instead.
-INFO [2026-06-09 17:58:58] 210 (32.4%) variants annotated as likely germline (DB INFO flag).
-INFO [2026-06-09 17:58:58] 7090_S4 is tumor in VCF file.
-INFO [2026-06-09 17:58:58] 0 homozygous and 2 heterozygous variants on chrX.
-INFO [2026-06-09 17:58:58] Sex from VCF: F (Fisher's p-value: 1, odds-ratio: 0.00).
-INFO [2026-06-09 17:58:58] Detected MuTect2 VCF.
-INFO [2026-06-09 17:58:58] Removing 0 Mutect2 calls due to blacklisted failure reasons.
-WARN [2026-06-09 17:58:58] Many variants removed by min.base.quality (25) filter. You might want to lower the cutoff.
-INFO [2026-06-09 17:58:59] Removing 484 low quality variants with non-offset BQ < 25.
-INFO [2026-06-09 17:58:59] Base quality scores range from 24 to 35 (offset by 1)
-INFO [2026-06-09 17:58:59] Minimum number of supporting reads ranges from 2 to 6, depending on coverage and BQS.
-INFO [2026-06-09 17:58:59] Initial testing for significant sample cross-contamination: maybe
-INFO [2026-06-09 17:59:00] Removing 139 variants with AF < 0.030 or AF >= 0.970 or insufficient supporting reads or depth < 15.
-INFO [2026-06-09 17:59:00] Total size of targeted genomic region: 0.38Mb (0.50Mb with 50bp padding).
-INFO [2026-06-09 17:59:00] 0.1% of targets contain variants.
-INFO [2026-06-09 17:59:00] Removing 24 variants outside intervals.
-INFO [2026-06-09 17:59:01] Setting somatic prior probabilities for likely germline hits to 0.000500 or to 0.500000 otherwise.
-INFO [2026-06-09 17:59:01] VCF does not contain somatic status. For best results, consider providing mapping.bias.file when matched normals are not available.
-INFO [2026-06-09 17:59:01] Excluding 0 novel or poor quality variants from segmentation.
-INFO [2026-06-09 17:59:01] Sample sex: ?
-INFO [2026-06-09 17:59:01] Segmenting data...
-INFO [2026-06-09 17:59:01] Interval weights found, will use weighted PSCBS.
+INFO [2026-06-15 20:44:21] Loading PureCN 2.10.0...
+INFO [2026-06-15 20:44:22] Using BiocParallel MulticoreParam backend with 4 cores.
+INFO [2026-06-15 20:44:22] ------------------------------------------------------------
+INFO [2026-06-15 20:44:22] PureCN 2.10.0
+INFO [2026-06-15 20:44:22] ------------------------------------------------------------
+INFO [2026-06-15 20:44:22] Arguments: -tumor.coverage.file /mnt/drive02/Tumor_purity_pipeline/results/purecn/coverage/7090_S4/7090_S4_coverage.txt.gz -log.ratio  -seg.file  -vcf.file /mnt/drive02/UMA/run_58/Mutect2/mutect2_7090_S4.vcf.gz -genome hg19 -sex ? -args.setPriorVcf 6 -args.setMappingBiasVcf NULL -args.filterIntervals 100,0.05 -args.segmentation 0.005,NULL, -sampleid 7090_S4 -min.ploidy 1.4 -max.ploidy 6 -max.non.clonal 0.2 -max.homozygous.loss 0.05,1e+07 -log.ratio.calibration 0.1 -model.homozygous FALSE -error 0.001 -interval.file resources/purecn_assets/baits_optimized_hg19.txt -min.logr.sdev 0.15 -max.segments 300 -plot.cnv TRUE -vcf.field.prefix PureCN. -cosmic.vcf.file  -DB.info.flag DB -POPAF.info.field POP_AF -Cosmic.CNT.info.field Cosmic.CNT -model betabin -post.optimize TRUE -log.file results/purecn/7090_S4/7090_S4.log -normal.coverage.file <data> -normalDB <data> -args.filterVcf <data> -fun.segmentation <data> -test.num.copy <data> -test.purity <data> -speedup.heuristics <data> -BPPARAM <data>
+INFO [2026-06-15 20:44:22] Using BiocParallel for parallel optimization.
+INFO [2026-06-15 20:44:22] Loading coverage files...
+INFO [2026-06-15 20:44:22] Mean target coverages: 365X (tumor) 392X (normal).
+WARN [2026-06-15 20:44:23] Allosome coverage missing, cannot determine sex.
+WARN [2026-06-15 20:44:23] Allosome coverage missing, cannot determine sex.
+INFO [2026-06-15 20:44:23] Removing 1 intervals with missing log.ratio.
+INFO [2026-06-15 20:44:23] Removing 32 low/high GC targets.
+INFO [2026-06-15 20:44:23] Removing 39 intervals excluded in normalDB.
+INFO [2026-06-15 20:44:23] normalDB provided. Setting minimum coverage for segmentation to 0.0015X.
+INFO [2026-06-15 20:44:23] Removing 7 low count (< 100 total reads) intervals.
+INFO [2026-06-15 20:44:23] Removing 824 low coverage (< 0.0015X) intervals.
+INFO [2026-06-15 20:44:23] Using 14498 intervals (1603 on-target, 12895 off-target).
+INFO [2026-06-15 20:44:23] Ratio of mean on-target vs. off-target read counts: 2.57
+INFO [2026-06-15 20:44:23] Mean off-target bin size: 197315
+INFO [2026-06-15 20:44:23] AT/GC dropout: 0.72 (tumor), 0.68 (normal), 1.04 (coverage log-ratio). 
+INFO [2026-06-15 20:44:23] High GC-bias in normal and/or tumor coverage.
+INFO [2026-06-15 20:44:23] Loading VCF...
+INFO [2026-06-15 20:44:24] Found 719 variants in VCF file.
+INFO [2026-06-15 20:44:24] Removing 71 triallelic sites.
+INFO [2026-06-15 20:44:24] Maximum of POPAF INFO is > 1, assuming -log10 scaled values
+WARN [2026-06-15 20:44:24] vcf.file has no DB info field for membership in germline databases. Found and used valid population allele frequency > 0.001000 instead.
+INFO [2026-06-15 20:44:24] 210 (32.4%) variants annotated as likely germline (DB INFO flag).
+INFO [2026-06-15 20:44:24] 7090_S4 is tumor in VCF file.
+INFO [2026-06-15 20:44:24] 0 homozygous and 2 heterozygous variants on chrX.
+INFO [2026-06-15 20:44:24] Sex from VCF: F (Fisher's p-value: 1, odds-ratio: 0.00).
+INFO [2026-06-15 20:44:24] Detected MuTect2 VCF.
+INFO [2026-06-15 20:44:24] Removing 0 Mutect2 calls due to blacklisted failure reasons.
+WARN [2026-06-15 20:44:24] Many variants removed by min.base.quality (25) filter. You might want to lower the cutoff.
+INFO [2026-06-15 20:44:24] Removing 484 low quality variants with non-offset BQ < 25.
+INFO [2026-06-15 20:44:24] Base quality scores range from 24 to 35 (offset by 1)
+INFO [2026-06-15 20:44:24] Minimum number of supporting reads ranges from 2 to 6, depending on coverage and BQS.
+INFO [2026-06-15 20:44:25] Initial testing for significant sample cross-contamination: maybe
+INFO [2026-06-15 20:44:25] Removing 139 variants with AF < 0.030 or AF >= 0.970 or insufficient supporting reads or depth < 15.
+INFO [2026-06-15 20:44:25] Total size of targeted genomic region: 0.35Mb (0.47Mb with 50bp padding).
+INFO [2026-06-15 20:44:25] 0.1% of targets contain variants.
+INFO [2026-06-15 20:44:25] Removing 24 variants outside intervals.
+INFO [2026-06-15 20:44:25] Setting somatic prior probabilities for likely germline hits to 0.000500 or to 0.500000 otherwise.
+INFO [2026-06-15 20:44:25] VCF does not contain somatic status. For best results, consider providing mapping.bias.file when matched normals are not available.
+INFO [2026-06-15 20:44:25] Excluding 0 novel or poor quality variants from segmentation.
+INFO [2026-06-15 20:44:25] Sample sex: ?
+INFO [2026-06-15 20:44:25] Segmenting data...
+INFO [2026-06-15 20:44:25] Interval weights found, will use weighted PSCBS.
 Error in h(simpleError(msg, call)) : 
   error in evaluating the argument 'x' in selecting a method for function 'median': non-numeric argument to mathematical function
 Calls: runAbsoluteCN ... .log_level -> layout -> median -> .handleSimpleError -> h
 Execution halted
+[FALLBACK] PureCN non ha prodotto il file CSV (non-convergenza o crash).
+[FALLBACK] Creazione del file dummy con valori NA per 7090_S4...
+[FALLBACK] File dummy creato correttamente.

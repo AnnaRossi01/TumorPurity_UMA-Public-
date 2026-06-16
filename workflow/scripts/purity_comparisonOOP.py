@@ -42,6 +42,15 @@ class TumorPurityComparison:
         self.manifest_df['sample_id'] = self.manifest_df['sample_id'].astype(str).str.strip()
         #self.manifest_path['sample_id'] = self.manifest_df['sample_id'].astype(str).str.strip() # ensure that the sample_id column is treated as string
 
+        # ---- INIZIO BLOCCO FIX & DEBUG SUI 6 CAMPIONI ----
+        duplicates = self.manifest_df[self.manifest_df.duplicated(subset=['sample_id'])]
+        if not duplicates.empty:
+            print(f"\n[ATTENZIONE] Trovati {len(duplicates)} campioni duplicati nel manifest.csv:")
+            print(duplicates['sample_id'].tolist())
+            print("Rimozione dei duplicati per prevenire la 'Merge Explosion'...\n")
+            self.manifest_df = self.manifest_df.drop_duplicates(subset=['sample_id'], keep='first')
+        # ---- FINE BLOCCO FIX & DEBUG ----
+
         # Initialize quality_flag if not present (backward compatibility)
         if 'quality_flag' not in self.manifest_df.columns:
             self.manifest_df['quality_flag'] = 'PASS'
@@ -61,9 +70,16 @@ class TumorPurityComparison:
 
         print(f"\n#### --- Loading Flow Cytometry --- ####\n")
         df = pd.read_excel(self.flow_db_path, sheet_name="db_purity_no1")       # because I have more than one sheet in the excel, I need to specify which one I want to load (in this case, the one with purity results)
-        self.df_flow = df[['ID', 'purity']].rename(columns={'purity': 'purity_flow'})
+        
+        # 2. Filtro usando .isin() per tenere solo le righe il cui 'ID' è nel manifest
+        df_filtered = df[df['ID'].isin(self.manifest_df['sample_id'])].copy()
+        
+        # Rimuovo eventuali ID duplicati tenendo la prima misurazione trovata
+        df_filtered = df_filtered.drop_duplicates(subset=['ID'])
+        
+        # 3. Seleziono solo le colonne che mi servono e rinomino
+        self.df_flow = df_filtered[['ID', 'purity']].rename(columns={'purity': 'purity_flow'})
         print(f"Flow Cytometry Data loaded: {len(self.df_flow)} samples\n")
-
 
     def load_ASCAT_results(self): 
         "Reads ASCAT summary file (txt) for each sample and obtain the purity results"
@@ -106,60 +122,67 @@ class TumorPurityComparison:
 
 
     def load_PureCN_results(self):
-        """Reads PureCN summary file (csv) for each sample and obtain the purity results - results into server"""
-        PureCN_list = []
-        print(f"#### --- Loading PureCN results --- ####\n")
+            """Reads PureCN summary file (csv) for each sample and obtain the purity results"""
+            PureCN_list = []
+            print(f"#### --- Loading PureCN results --- ####\n")
 
-        for sample_id in self.manifest_df['sample_id']:
-            file_PureCN = self.purecn_base_dir / sample_id / f"{sample_id}.csv"
+            for sample_id in self.manifest_df['sample_id']:
+                file_PureCN = self.purecn_base_dir / sample_id / f"{sample_id}.csv"
 
-            if file_PureCN.exists():
-                purity_val = pd.read_csv(file_PureCN)['purity'].iloc[0]
+                if file_PureCN.exists():
+                    try:
+                        df_purecn = pd.read_csv(file_PureCN)
+                        
+                        # Trova la colonna della purezza ignorando maiuscole/minuscole
+                        purity_col = [col for col in df_purecn.columns if col.lower() == 'purity']
+                        
+                        if purity_col:
+                            purity_val = df_purecn[purity_col[0]].iloc[0]
+                        else:
+                            print(f"  [ERROR] Colonna purity non trovata in {sample_id}.csv")
+                            purity_val = pd.NA
+                            
+                    except Exception as e:
+                        print(f"  [ERROR] Impossibile leggere o parsare {file_PureCN}: {e}")
+                        purity_val = pd.NA
 
-                # Check if PureCN failed (NA/NaN value)
-                if pd.isna(purity_val):
-                    print(f"  [FILTERED] PureCN failed for {sample_id}: insufficient somatic variants (likely PSCBS crash)")
-                    self.failed_samples.append(sample_id)
-                    # Mark manifest entry as FAIL
-                    self.manifest_df.loc[self.manifest_df['sample_id'] == sample_id, 'quality_flag'] = 'FAIL_LOW_VARIANTS'
+                    # Check if PureCN failed (NA/NaN value)
+                    if pd.isna(purity_val):
+                        print(f"  [FILTERED] PureCN failed for {sample_id}: insufficient somatic variants (likely PSCBS crash)")
+                        self.failed_samples.append(sample_id)
+                        # Mark manifest entry as FAIL
+                        self.manifest_df.loc[self.manifest_df['sample_id'] == sample_id, 'quality_flag'] = 'FAIL_LOW_VARIANTS'
 
-                PureCN_list.append({"ID": sample_id, 'purity_PureCN': purity_val})
-            else:
-                PureCN_list.append({"ID": sample_id, 'purity_PureCN': pd.NA})
-                print(f"  [WARNING] PureCN result not found for: {sample_id}, added NA\n")
+                    PureCN_list.append({"ID": sample_id, 'purity_PureCN': purity_val})
+                else:
+                    PureCN_list.append({"ID": sample_id, 'purity_PureCN': pd.NA})
+                    print(f"  [WARNING] PureCN result not found for: {sample_id}, added NA\n")
 
-        # Manteniamo la protezione anti-crash di Pandas
-        self.df_tools['PureCN'] = pd.DataFrame(PureCN_list, columns=["ID", "purity_PureCN"])
-        print(f"PureCN Data loaded: {len(self.df_tools['PureCN'])} samples (Failed: {len(self.failed_samples)})\n")
+            # Manteniamo la protezione anti-crash di Pandas
+            self.df_tools['PureCN'] = pd.DataFrame(PureCN_list, columns=["ID", "purity_PureCN"])
+            print(f"PureCN Data loaded: {len(self.df_tools['PureCN'])} samples (Failed: {len(self.failed_samples)})\n")
 
 
     def merge_and_save(self):
-        """Merges the flow citometry and all tool results on the ID column, filtering out failed samples"""
+        """Merges the flow cytometry and all tool results on the ID column.
+        All samples are kept in the final dataset to avoid survivorship bias."""
         self.df_merged = self.df_flow.copy()
 
         for tool_name, df_tool in self.df_tools.items():
             if df_tool is not None and not df_tool.empty:
                 self.df_merged = pd.merge(self.df_merged, df_tool, on='ID', how='left')
 
-        # Filter out failed samples (those with NA PureCN purity or marked as FAIL in quality_flag)
-        initial_count = len(self.df_merged)
-        self.df_merged = self.df_merged[
-            (self.df_merged['purity_PureCN'].notna()) &
-            (self.df_merged['ID'].isin(self.failed_samples) == False)
-        ]
-        final_count = len(self.df_merged)
-        filtered_count = initial_count - final_count
-
-        print(f"\n#### --- Quality Filter Summary --- ####")
-        print(f"Total samples before filtering: {initial_count}")
-        print(f"Samples with failed PureCN (insufficient variants): {len(self.failed_samples)}")
-        print(f"Samples in final cohort for analysis: {final_count}\n")
+        print(f"\n#### --- Quality Summary --- ####")
+        print(f"Total samples analyzed in the cohort: {len(self.df_merged)}")
+        print(f"Samples exhibiting non-convergence (NA) in PureCN: {len(self.failed_samples)}\n")
 
         if len(self.failed_samples) > 0:
-            print(f"[FILTERED SAMPLES] {', '.join(self.failed_samples)}\n")
+            print(f"[NOTE] The {len(self.failed_samples)} samples lacking PureCN convergence are kept in the dataset to accurately evaluate the robustness of ASCAT.sc and IchorCNA.\n")
 
         self.output_dir.parent.mkdir(exist_ok=True, parents=True)
-        self.df_merged.to_csv(self.output_dir, sep='\t', index=False)
+        
+        # FIX: Impostato il separatore su virgola per coerenza con l'estensione .csv
+        self.df_merged.to_csv(self.output_dir, sep=',', index=False)
         print(f"#### --- Results merged and saved to: {self.output_dir} --- ####\n")
 
     def save_quality_report(self):

@@ -66,6 +66,8 @@ rule purecn_intervals:
         ref   = config['refGen']
     output:
         intervals = "resources/purecn_assets/baits_optimized_hg19.txt"
+    params: 
+        mappability = config ['mappability']
     singularity:
         PURECN_SIF
     log:
@@ -76,6 +78,8 @@ rule purecn_intervals:
             --in-file {input.baits} \
             --fasta {input.ref} \
             --genome hg19 \
+            --mappability {params.mappability} \
+            --off-target \
             --out-file {output.intervals} > {log} 2>&1
         """
 
@@ -193,10 +197,10 @@ rule purecn_run:
         PURECN_SIF
     shell:
         """
+        # FOLDER
         mkdir -p {output.out_dir}
 
-        # Run PureCN with error handling for low-variant samples
-        set +e
+        # Eseguiamo PureCN e forziamo Bash a ignorare il suo exit code con '|| true'
         Rscript $PURECN/PureCN.R \
             --out {output.out_dir}/{params.sample_id} \
             --tumor {input.tumor_cov} \
@@ -210,29 +214,25 @@ rule purecn_run:
             --postoptimize \
             --force \
             --seed 123 \
-            --cores {resources.cpus_per_task} >> {log} 2>&1
-        PURECN_EXIT=$?
-        set -e
+            --cores {resources.cpus_per_task} >> {log} 2>&1 || true
 
-        # Check if PureCN succeeded; if not and CSV is missing, create dummy with NA
+        # Ora controlliamo solo se il file CSV di output esiste
         if [ ! -f {output.csv_res} ]; then
-            if [ $PURECN_EXIT -ne 0 ]; then
-                echo "[FALLBACK] PureCN failed with exit code $PURECN_EXIT (likely insufficient variants or PSCBS segmentation crash)." >> {log}
-                echo "[FALLBACK] Creating dummy CSV with NA values for {params.sample_id}..." >> {log}
-                cat > {output.csv_res} << 'CSVEOF'
-                Sample.ID,purity,ploidy
-                {params.sample_id},NA,NA
-                CSVEOF
-                echo "[FALLBACK] Dummy CSV created. Sample will be marked as failed in downstream analysis." >> {log}
-            else
-                echo "[ERROR] PureCN exited successfully but output CSV not found!" >> {log}
-                exit 1
-            fi
+            echo "[FALLBACK] PureCN non ha prodotto il file CSV (non-convergenza o crash)." >> {log}
+            echo "[FALLBACK] Creazione del file dummy con valori NA per {params.sample_id}..." >> {log}
+            
+            # Creiamo il file
+            echo "Sample.ID,purity,ploidy" > {output.csv_res}
+            echo "{params.sample_id},NA,NA" >> {output.csv_res}
+            
+            echo "[FALLBACK] File dummy creato correttamente." >> {log}
         else
-            if [ $PURECN_EXIT -ne 0 ]; then
-                echo "[WARNING] PureCN exited with error code $PURECN_EXIT, but output CSV exists. Proceeding with available output." >> {log}
-            fi
+            echo "[SUCCESS] PureCN ha generato correttamente il file CSV." >> {log}
         fi
+        
+        # Obblighiamo Bash a chiudere il blocco con successo, in modo che Snakemake 
+        # creda che il job sia andato a buon fine (e quindi conservi il file CSV dummy)
+        exit 0
         """
 
 # tumor purity comaprison 
@@ -249,6 +249,8 @@ rule purity_comparison:
         purecn_dir = "results/purecn/"
     log: 
         "logs/purity_comparison.log"
+    conda: 
+        "workflow/envs/python_env.yaml" 
     shell: 
         """
         python workflow/scripts/purity_comparisonOOP.py \

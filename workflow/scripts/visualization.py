@@ -28,8 +28,9 @@ class TumorPurityVisualization:
         self.output_dir.mkdir(exist_ok=True, parents=True)  #create the output_dir if doesn't exist
 
     def load_data(self):
-        self.df = pd.read_csv(self.data_file, sep='\t')
-    
+        self.df = pd.read_csv(self.data_file, sep=',')
+        self.df.columns = self.df.columns.str.strip()    
+
     def get_tool_columns(self):
         """Get all tool columns (exclude ID and purity_flow)"""
         return [col for col in self.df.columns if col.startswith('purity_') and col != 'purity_flow']
@@ -157,11 +158,19 @@ class TumorPurityVisualization:
         
 
 if __name__ == "__main__":
-    data_path = "tumor_purity_comparison/tumor_purity_comparison.tsv"
-    out_dir = "tumor_purity_comparison"
+    import argparse
 
-    visualization = TumorPurityVisualization(data_path, out_dir)
-    visualization.load_data()
-    visualization.generate_all_plots()
-    print(f" #### --- Visualization completed, results saved in: {out_dir} --- ####\n")
+    # Configurazione dinamica per permettere l'esecuzione dello script standalone
+    parser = argparse.ArgumentParser(description="Generazione grafici Purity Comparison")
+    parser.add_argument("--input", required=True, help="Percorso del file CSV unito (es. purity_comparison.csv)")
+    parser.add_argument("--out_dir", required=True, help="Cartella di destinazione dei grafici")
+    args = parser.parse_args()
+
+    try:
+        visualization = TumorPurityVisualization(args.input, args.out_dir)
+        visualization.load_data()
+        visualization.generate_all_plots()
+        print(f" #### --- Visualization completed, results saved in: {args.out_dir} --- ####\n")
+    except Exception as e:
+        print(f"[ERROR] Generazione grafici fallita: {e}")
     

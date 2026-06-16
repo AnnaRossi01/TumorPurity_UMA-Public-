@@ -1,0 +1,2 @@
+"Sampleid","Purity","Ploidy","Sex","Contamination","Flagged","Failed","Curated","Comment"
+"7311_S3",0.45,3.0348184712971,"Coverage: ? VCF: F",0,TRUE,FALSE,FALSE,"POOR GOF (37.7%);HIGH AT- OR GC-DROPOUT"

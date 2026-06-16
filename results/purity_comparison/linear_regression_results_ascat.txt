@@ -1,0 +1,7 @@
+LINEAR REGRESSION ANALYSIS (ASCAT vs Flow Cytometry):
+Valid Samples (no NA): 124
+Equation: y = 0.01x + 0.87
+R-squared: 0.00
+P-value: 8.882e-01
+Standard Error: 0.074
+Mean Absolute Error: 17.82%

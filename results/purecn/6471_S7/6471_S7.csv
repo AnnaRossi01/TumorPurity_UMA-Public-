@@ -1,0 +1,2 @@
+"Sampleid","Purity","Ploidy","Sex","Contamination","Flagged","Failed","Curated","Comment"
+"6471_S7",0.15,1.78432801933913,"?",0,TRUE,FALSE,FALSE,"LOW PURITY;POOR GOF (0%);NOISY LOG-RATIO"

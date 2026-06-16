@@ -1,0 +1,2 @@
+"Sampleid","Purity","Ploidy","Sex","Contamination","Flagged","Failed","Curated","Comment"
+"6320_S8",0.48,2.99123574090109,"Coverage: ? VCF: F",0,TRUE,FALSE,FALSE,"POOR GOF (0%)"

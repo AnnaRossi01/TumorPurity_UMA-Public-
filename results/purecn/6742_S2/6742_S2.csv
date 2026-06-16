@@ -1,0 +1,2 @@
+"Sampleid","Purity","Ploidy","Sex","Contamination","Flagged","Failed","Curated","Comment"
+"6742_S2",0.92,4.58291325783031,"Coverage: ? VCF: F",0,TRUE,FALSE,FALSE,"RARE KARYOTYPE;HIGH PURITY AND model.homozygous=FALSE;POOR GOF (67.6%);HIGH AT- OR GC-DROPOUT"

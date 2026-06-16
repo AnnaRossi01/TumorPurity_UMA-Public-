@@ -1,0 +1,2 @@
+mean.coverage.ontarget mean.coverage.offtarget mean.duplication.ontarget mean.duplication.offtarget mom.raw.ontarget mom.raw.offtarget mom.post.gc.ontarget mom.post.gc.offtarget mom.post.reptiming.ontarget mom.post.reptiming.offtarget
+1007.25139928871 0.259096342662771 0.257946114467393 0.041838315707545 1.0470030012765 0.458307265964048 1.00616622841373 0.598145366001858 1.00616622841373 0.598145366001858

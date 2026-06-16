@@ -5,7 +5,7 @@
 
 # Escludi categoricamente dati genomici e report biologici
 resources/
-results/
+#results/
 
 # Escludi log di esecuzione temporanei dei nodi
 workflow/scripts/*.log

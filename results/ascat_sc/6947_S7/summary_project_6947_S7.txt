@@ -1,0 +1,2 @@
+samplename	purity	ploidy	ploidy.tumour
+remDup_recal_6947_S7.bam	remDup_recal_6947_S7.bam	0.72	2.76	3.09499255887245

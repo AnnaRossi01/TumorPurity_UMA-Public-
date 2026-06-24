@@ -1,3 +1,18 @@
+/mnt/drive02/Tumor_purity_pipeline/workflow/scripts/visualization.py:96: FutureWarning: 
+
+Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `x` variable to `hue` and set `legend=False` for the same effect.
+
+  bars = sns.barplot(x='Tool', y='Value', data=df_metrics,
+/mnt/drive02/Tumor_purity_pipeline/workflow/scripts/visualization.py:96: FutureWarning: 
+
+Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `x` variable to `hue` and set `legend=False` for the same effect.
+
+  bars = sns.barplot(x='Tool', y='Value', data=df_metrics,
+/mnt/drive02/Tumor_purity_pipeline/workflow/scripts/visualization.py:410: FutureWarning: 
+
+Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `x` variable to `hue` and set `legend=False` for the same effect.
+
+  sns.boxplot(x='Method', y='Tumor Purity', data=df_melted,
 
 [ATTENZIONE] Trovati 1 campioni duplicati nel manifest.csv:
 ['7449_S4']
@@ -44,16 +59,31 @@ Quality filter report saved to: results/purity_comparison/quality_filter_report.
 
 ----------------------------------------------------------------------------------------------------
 
-#### --- Generating plots for ascat vs Flow Cytometry --- ####
+#### --- Generating plots for ASCAT.sc vs Flow Cytometry --- ####
 
 
-#### --- Generating plots for ichorCNA vs Flow Cytometry --- ####
+#### --- Generating plots for IchorCNA vs Flow Cytometry --- ####
 
 
 #### --- Generating plots for PureCN vs Flow Cytometry --- ####
 
 
 #### --- Generating Multiple Tools Comparison Plot & Friedman Test --- ####
+
+
+### --- Generating RMSE Comparison Bar Chart --- ####
+
+
+#### --- Generating MAE Comparison Bar Chart --- ####
+
+
+#### --- Generating Comparative Boxplot --- ####
+
+
+#### --- Generating Correlation Matrix Heatmap --- ####
+
+
+#### --- Generating Comprehensive Metrics Bubble Chart --- ####
 
  #### --- Visualization completed, results saved in: results/purity_comparison --- ####
 

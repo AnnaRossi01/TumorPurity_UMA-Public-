@@ -1,4 +1,4 @@
-LINEAR REGRESSION ANALYSIS (ICHORCNA vs Flow Cytometry):
+LINEAR REGRESSION ANALYSIS (IchorCNA vs Flow Cytometry):
 Valid Samples (no NA): 124
 Equation: y = 0.70x + -0.09
 R-squared: 0.20

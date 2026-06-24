@@ -5,12 +5,13 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-def parse_purecn_log(filepath):
+def parse_purecn_log(filepath, failed_samples_report=None):
     """
-    Legge un log di PureCN ed estrae metriche chimiche, 
+    Legge un log di PureCN ed estrae metriche chimiche,
     di copertura e lo status di fallimento.
     """
     sample_id = os.path.basename(filepath).replace('_run.log', '').replace('.log', '')
+    failed_samples_report = failed_samples_report or set()
     
     # Dizionario base per il campione
     data = {
@@ -35,7 +36,10 @@ def parse_purecn_log(filepath):
             log_text = file.read()
             
             # --- STATUS DEL CAMPIONE ---
-            if "Execution halted" in log_text or "PureCN failed due to QC/Noise limits" in log_text:
+            if failed_samples_report:
+                # Se esiste un report esterno, usalo come fonte autorevole.
+                data['Status'] = 'Failed' if sample_id in failed_samples_report else 'Success'
+            elif "Execution halted" in log_text or "PureCN failed due to QC/Noise limits" in log_text:
                 data['Status'] = 'Failed'
                 
             # --- ESTRAZIONE METRICHE VIA REGEX ---
@@ -94,11 +98,37 @@ def parse_purecn_log(filepath):
     return data
 
 
-def generate_qc_plots(df):
-    # se non c'è la colonna MAPD_Overall, usa Noise_Ratio come proxy per la qualità del campione
-    noise_metric = 'MAPD_Overall' if 'MAPD_Overall' in df.columns else 'Noise_Ratio'
+def load_failed_samples_from_report(report_path):
+    """Legge il file quality_filter_report.txt e restituisce i campioni esclusi."""
+    failed_samples = set()
+    in_excluded_section = False
+    try:
+        with open(report_path, 'r') as report:
+            for line in report:
+                stripped = line.strip()
+                if stripped.startswith('EXCLUDED SAMPLES'):
+                    in_excluded_section = True
+                    continue
+                if stripped.startswith('INCLUDED SAMPLES'):
+                    break
+                if in_excluded_section and stripped.startswith('- '):
+                    sample = stripped[2:]
+                    if sample:
+                        failed_samples.add(sample)
+    except FileNotFoundError:
+        print(f"Report non trovato: {report_path}. Continuo senza status esterni.")
+    return failed_samples
 
-    
+
+def generate_qc_plots(df):
+    # Usa una metrica disponibile per tutti i campioni, in modo che i falliti non vengano esclusi dal grafico.
+    if 'MAPD_Overall' in df.columns and df['MAPD_Overall'].notna().any():
+        noise_metric = 'MAPD_Overall'
+    elif 'Noise_Ratio' in df.columns and df['Noise_Ratio'].notna().any():
+        noise_metric = 'Noise_Ratio'
+    else:
+        noise_metric = 'Tumor_Coverage'
+
     fig = plt.figure(figsize=(15, 10))
     palette_status = {"Success": "green", "Failed": "red"}
 
@@ -110,6 +140,7 @@ def generate_qc_plots(df):
     plt.title(f'A. {noise_metric} by Status', fontweight='bold')
     plt.ylabel(noise_metric)
     plt.xlabel('Status')
+    plt.legend([],[], frameon=False)
 
     # # Traccia empiricamente la massima tolleranza osservata nei campioni validi
     #if 'Success' in df['Status'].values:
@@ -145,8 +176,8 @@ def generate_qc_plots(df):
     
 
     plt.tight_layout()
-    plt.savefig("./analysis/PureCN_QC_Analytics_postoff.png", dpi=300)
-    print("Grafici salvati in PureCN_QC_Analytics_postoff.png")
+    plt.savefig("./analysis/PureCN_QC_Analytics.png", dpi=300)
+    print("Grafici salvati in PureCN_QC_Analytics.png")
 
 
 
@@ -162,22 +193,30 @@ def main():
         return
         
     print(f" Inizio il parsing di {len(log_files)} file di log trovati in locale...\n")
-    
-    results = [parse_purecn_log(f) for f in log_files]
+
+    report_path = os.path.join("results", "purity_comparison", "quality_filter_report.txt")
+    failed_samples_report = load_failed_samples_from_report(report_path)
+    if failed_samples_report:
+        print(f"Trovati {len(failed_samples_report)} campioni falliti nel report: {sorted(failed_samples_report)}\n")
+    else:
+        print("Nessun report di failed samples trovato o report vuoto. Continuerò con la sola analisi dai log.\n")
+
+    results = [parse_purecn_log(f, failed_samples_report=failed_samples_report) for f in log_files]
     df = pd.DataFrame(results)
-    
+
     # Calcolo della percentuale di varianti rimosse
     # Usiamo un controllo di sicurezza per evitare divisioni per zero
     if 'Total_Variants' in df.columns and 'Rejected_LowBQ' in df.columns:
         df['Pct_Variants_Lost_BQ'] = (df['Rejected_LowBQ'] / df['Total_Variants']) * 100
-    
+
     # Salvataggio dell'output in locale
-    output_csv = "purecn_local_test_QC_postoff.csv"
+    output_csv = "purecn_local_test_QC.csv"
     outputDir = "./analysis/"
     df.to_csv(outputDir + output_csv, index=False)
-    
+
     # Stampa un riassunto elegante a terminale
-    print(df.to_string(index=False, columns=['Sample_ID', 'Status', 'Tumor_Coverage', 'Noise_Ratio', 'Pct_Variants_Lost_BQ', 'Segments', 'Median_Segment_Size_Mb']))
+    display_cols = ['Sample_ID', 'Status', 'Tumor_Coverage', 'Noise_Ratio', 'Pct_Variants_Lost_BQ', 'Segments', 'Median_Segment_Size_Mb']
+    print(df.to_string(index=False, columns=[c for c in display_cols if c in df.columns]))
     print(f"\n Dati estratti e salvati con successo in: {outputDir + output_csv}")
 
     generate_qc_plots(df)

@@ -1,4 +1,4 @@
-LINEAR REGRESSION ANALYSIS (PURECN vs Flow Cytometry):
+LINEAR REGRESSION ANALYSIS (PureCN vs Flow Cytometry):
 Valid Samples (no NA): 113
 Equation: y = 0.41x + 0.20
 R-squared: 0.09

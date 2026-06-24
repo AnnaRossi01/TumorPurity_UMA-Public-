@@ -1,4 +1,4 @@
-LINEAR REGRESSION ANALYSIS (ASCAT vs Flow Cytometry):
+LINEAR REGRESSION ANALYSIS (ASCAT.sc vs Flow Cytometry):
 Valid Samples (no NA): 124
 Equation: y = 0.01x + 0.87
 R-squared: 0.00

@@ -240,7 +240,8 @@ rule purity_comparison:
     input: 
         ascat_done = expand("results/ascat_sc/{sample}/ascat.done", sample=SAMPLES),
         purecn_csv = expand("results/purecn/{sample}/{sample}.csv", sample=SAMPLES), 
-        manifest = "config/manifest.csv"
+        manifest = "config/manifest.csv",
+        script = "workflow/scripts/purity_comparisonOOP.py"
     output:
         report = "results/purity_comparison/purity_comparison.csv"
     params: 

@@ -13,6 +13,8 @@ import numpy as np
 import seaborn as sns
 from scipy import stats     # algoritmi e strumenti matematici per l'analisi statistica
 from pathlib import Path
+import subprocess
+import sys
 
 
 class TumorPurityVisualization:
@@ -431,75 +433,55 @@ class TumorPurityVisualization:
 
     
     def correlation_matrix_heatmap(self):
-        """Generates a heatmap of the Spearman correlation matrix between all tools and Flow Cytometry with dendrogram clustering."""
+        """Generates the correlation heatmap by calling the STHDA R script."""
         if self.df is None:
             raise ValueError("Data not loaded.")
 
-        print("\n#### --- Generating Correlation Matrix Heatmap --- ####\n")
+        print("\n#### --- Delegating Correlation Matrix to R (ggplot2) --- ####\n")
 
+        # 1. Preparazione dei dati e rinomina colonne
         cols_to_keep = ['purity_flow'] + self.get_tool_columns()
         df_corr_data = self.df[cols_to_keep].copy()
-
+        
         rename_dict = {'purity_flow': 'Flow Cytometry'}
         for col in self.get_tool_columns():
             tool_name = col.replace('purity_', '')
-            if tool_name.lower() == 'ascat':
-                tool_name = 'ASCAT.sc'
-            elif tool_name.lower() == 'purecn':
-                tool_name = 'PureCN'
-            elif tool_name.lower() == 'ichorcna':
-                tool_name = 'IchorCNA'
+            if tool_name.lower() == 'ascat': tool_name = 'ASCAT.sc'
+            elif tool_name.lower() == 'purecn': tool_name = 'PureCN'
+            elif tool_name.lower() == 'ichorcna': tool_name = 'IchorCNA'
             rename_dict[col] = tool_name
-
+            
         df_corr_data.rename(columns=rename_dict, inplace=True)
+
+        # 2. CALCOLO DELLA MATRICE IN PYTHON
         corr_matrix = df_corr_data.corr(method='spearman')
 
-        mask = np.triu(np.ones_like(corr_matrix, dtype=bool), k=1)
+        # 3. Salvataggio della matrice in un CSV temporaneo
+        matrix_csv_path = self.output_dir / "spearman_matrix_for_R.csv"
+        corr_matrix.to_csv(matrix_csv_path)
 
-        # 1. Aumentiamo la larghezza del foglio (12x10) e disabilitiamo la colorbar di default
-        cg = sns.clustermap(
-            corr_matrix,
-            cmap='coolwarm',
-            vmin=-1,
-            vmax=1,
-            center=0,
-            linewidths=1,
-            linecolor='black',
-            annot=True,
-            fmt='.2f',
-            mask=mask,
-            annot_kws={'size': 12, 'weight': 'bold'},
-            row_cluster=True,
-            col_cluster=True,
-            figsize=(12, 10),      # <-- Foglio più largo
-            metric='euclidean',
-            method='average',
-            cbar_pos=None          # <-- Disabilita la colorbar integrata
-        )
+        r_script_path = Path(__file__).resolve().parent / "heatmap.R"
+        
+        try:
+            result = subprocess.run(
+                ["Rscript", str(r_script_path), str(matrix_csv_path), str(self.output_dir)],
+                check=True,
+                capture_output=True,
+                text=True
+            )
+            print("[SUCCESS] Heatmap generated using ggplot2")
+            if result.stdout:
+                print(result.stdout)
+        except subprocess.CalledProcessError as e:
+            print(f"[ERROR] R script failed with return code {e.returncode}")
+            print(e.stderr or e.stdout)
+            sys.exit(1)
+        except FileNotFoundError:
+            print("[ERROR] Rscript not found.")
+            sys.exit(1)
 
-        cg.ax_heatmap.set_xticklabels(cg.ax_heatmap.get_xticklabels(), rotation=45, ha='right', fontsize=12)
-        cg.ax_heatmap.set_yticklabels(cg.ax_heatmap.get_yticklabels(), rotation=0, fontsize=12)
-
-        cg.fig.suptitle('Cross-Method Spearman Correlation Matrix', fontsize=16, fontweight='bold', y=1.02)
-
-        plt.setp(cg.ax_row_dendrogram.get_xticklabels(), visible=False)
-        plt.setp(cg.ax_col_dendrogram.get_yticklabels(), visible=False)
-
-        # 2. IL MURO INVISIBILE: costringiamo tutto il grafico nel 75% sinistro del foglio
-        cg.fig.subplots_adjust(right=0.75)
-
-        # 3. Piazziamo la legenda nel 25% di spazio bianco libero
-        # Coordinate: [inizio da sinistra (80%), altezza da terra (30%), spessore (3%), altezza barra (40%)]
-        cbar_ax = cg.fig.add_axes([0.80, 0.3, 0.03, 0.4])
-        cbar = cg.fig.colorbar(cg.ax_heatmap.collections[0], cax=cbar_ax)
-        cbar.set_label('Spearman Correlation Coefficient (ρ)', fontsize=12)
-
-        # Salvataggio
-        output_file = self.output_dir / "Spearman_Correlation_Clustermap.png"
-        cg.savefig(output_file, dpi=300, bbox_inches='tight')
-        plt.close()
-
-
+    
+    
 if __name__ == "__main__":
     import argparse
 

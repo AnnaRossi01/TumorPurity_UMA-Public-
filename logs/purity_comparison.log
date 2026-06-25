@@ -1,14 +1,14 @@
-/mnt/drive02/Tumor_purity_pipeline/workflow/scripts/visualization.py:96: FutureWarning: 
+/mnt/drive02/Tumor_purity_pipeline/workflow/scripts/visualization.py:98: FutureWarning: 
 
 Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `x` variable to `hue` and set `legend=False` for the same effect.
 
   bars = sns.barplot(x='Tool', y='Value', data=df_metrics,
-/mnt/drive02/Tumor_purity_pipeline/workflow/scripts/visualization.py:96: FutureWarning: 
+/mnt/drive02/Tumor_purity_pipeline/workflow/scripts/visualization.py:98: FutureWarning: 
 
 Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `x` variable to `hue` and set `legend=False` for the same effect.
 
   bars = sns.barplot(x='Tool', y='Value', data=df_metrics,
-/mnt/drive02/Tumor_purity_pipeline/workflow/scripts/visualization.py:410: FutureWarning: 
+/mnt/drive02/Tumor_purity_pipeline/workflow/scripts/visualization.py:412: FutureWarning: 
 
 Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `x` variable to `hue` and set `legend=False` for the same effect.
 
@@ -80,7 +80,10 @@ Quality filter report saved to: results/purity_comparison/quality_filter_report.
 #### --- Generating Comparative Boxplot --- ####
 
 
-#### --- Generating Correlation Matrix Heatmap --- ####
+#### --- Delegating Correlation Matrix to R (ggplot2) --- ####
+
+[SUCCESS] Heatmap generated using ggplot2
+[1] "[SUCCESS] Grafico a triangolo generato con successo: results/purity_comparison/Spearman_correlation_R_corrected.png"
 
 
 #### --- Generating Comprehensive Metrics Bubble Chart --- ####

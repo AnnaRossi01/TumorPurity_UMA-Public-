@@ -488,13 +488,15 @@ if __name__ == "__main__":
     # Configurazione dinamica per permettere l'esecuzione dello script standalone
     parser = argparse.ArgumentParser(description="Generazione grafici Purity Comparison")
     parser.add_argument("--input", required=True, help="Percorso del file CSV unito (es. purity_comparison.csv)")
-    parser.add_argument("--out_dir", required=True, help="Cartella di destinazione dei grafici")
+    parser.add_argument("--out_dir", default=None,
+                        help="Cartella di destinazione dei grafici (default: <input>/plots)")
     args = parser.parse_args()
 
     try:
-        visualization = TumorPurityVisualization(args.input, args.out_dir)
+        out_dir = Path(args.out_dir) if args.out_dir else Path(args.input).resolve().parent / "plots"
+        visualization = TumorPurityVisualization(args.input, out_dir)
         visualization.load_data()
         visualization.generate_all_plots()
-        print(f" #### --- Visualization completed, results saved in: {args.out_dir} --- ####\n")
+        print(f" #### --- Visualization completed, results saved in: {out_dir} --- ####\n")
     except Exception as e:
         print(f"[ERROR] Generazione grafici fallita: {e}")

@@ -1,0 +1,2 @@
+"Sampleid","Purity","Ploidy","Sex","Contamination","Flagged","Failed","Curated","Comment"
+"5641_S23",0.73,4.07915613658095,"Coverage: ? VCF: F",0,TRUE,FALSE,FALSE,"POOR GOF (0%);HIGH AT- OR GC-DROPOUT"

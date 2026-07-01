@@ -1,0 +1,2 @@
+"Sampleid","Purity","Ploidy","Sex","Contamination","Flagged","Failed","Curated","Comment"
+"5207_S5",0.37,3.35601052690881,"?",0,TRUE,FALSE,FALSE,"POOR GOF (72.5%);HIGH AT- OR GC-DROPOUT"

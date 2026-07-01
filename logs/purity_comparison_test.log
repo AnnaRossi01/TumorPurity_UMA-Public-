@@ -1,0 +1,77 @@
+/mnt/drive02/Tumor_purity_pipeline/workflow/scripts/visualization.py:98: FutureWarning: 
+
+Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `x` variable to `hue` and set `legend=False` for the same effect.
+
+  bars = sns.barplot(x='Tool', y='Value', data=df_metrics,
+/mnt/drive02/Tumor_purity_pipeline/workflow/scripts/visualization.py:98: FutureWarning: 
+
+Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `x` variable to `hue` and set `legend=False` for the same effect.
+
+  bars = sns.barplot(x='Tool', y='Value', data=df_metrics,
+/mnt/drive02/Tumor_purity_pipeline/workflow/scripts/visualization.py:412: FutureWarning: 
+
+Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `x` variable to `hue` and set `legend=False` for the same effect.
+
+  sns.boxplot(x='Method', y='Tumor Purity', data=df_melted,
+
+#### --- Loading Flow Cytometry --- ####
+
+Flow Cytometry Data loaded: 96 samples
+
+#### --- Loading ASCAT.sc results --- ####
+
+ASCAT.sc Data loaded: 96 samples
+
+#### --- Loading ichorCNA results --- ####
+
+ichorCNA Data loaded: 96 samples
+
+#### --- Loading PureCN results --- ####
+
+  [FILTERED] PureCN failed for 7035_S2: insufficient somatic variants (likely PSCBS crash)
+PureCN Data loaded: 96 samples (Failed: 1)
+
+
+#### --- Quality Summary --- ####
+Total samples analyzed in the cohort: 96
+Samples exhibiting non-convergence (NA) in PureCN: 1
+
+[NOTE] The 1 samples lacking PureCN convergence are kept in the dataset to accurately evaluate the robustness of ASCAT.sc and IchorCNA.
+
+#### --- Results merged and saved to: results/purity_comparison_test/purity_comparison.csv --- ####
+
+Quality filter report saved to: results/quality_filter_report.txt
+
+----------------------------------------------------------------------------------------------------
+
+#### --- Generating plots for ASCAT.sc vs Flow Cytometry --- ####
+
+
+#### --- Generating plots for IchorCNA vs Flow Cytometry --- ####
+
+
+#### --- Generating plots for PureCN vs Flow Cytometry --- ####
+
+
+#### --- Generating Multiple Tools Comparison Plot & Friedman Test --- ####
+
+
+### --- Generating RMSE Comparison Bar Chart --- ####
+
+
+#### --- Generating MAE Comparison Bar Chart --- ####
+
+
+#### --- Generating Comparative Boxplot --- ####
+
+
+#### --- Delegating Correlation Matrix to R (ggplot2) --- ####
+
+[SUCCESS] Heatmap generated using ggplot2
+[1] "[SUCCESS] Grafico a triangolo generato con successo: results/purity_comparison_test/plots/Spearman_correlation_R_corrected.png"
+
+
+#### --- Generating Comprehensive Metrics Bubble Chart --- ####
+
+ #### --- Visualization completed, results saved in: results/purity_comparison_test/plots --- ####
+

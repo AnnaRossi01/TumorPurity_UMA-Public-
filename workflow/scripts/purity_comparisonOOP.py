@@ -27,16 +27,18 @@ from visualization import TumorPurityVisualization
 class TumorPurityComparison:
     """ Class to compare tumor purity results from flow citometry and ASCAT.sc for the same samples.
     input_dir: directory where the input files are located (flow cytometry results and ASCAT.sc results)
-    output_dir: directory where the merged results will be saved
+    output_path: file path where the merged results will be saved
     """
 
-    def __init__(self, manifest_path, flow_db_path, ascat_dir, purecn_dir, output_dir):
+    def __init__(self, manifest_path, flow_db_path, ascat_dir, purecn_dir, output_path):
         " Initialize the paths of snakefile"
         self.manifest_path = Path(manifest_path)
         self.flow_db_path = Path(flow_db_path)
         self.ascat_base_dir = Path(ascat_dir)
         self.purecn_base_dir = Path(purecn_dir)
-        self.output_dir = Path(output_dir)
+        self.output_path = Path(output_path)
+        self.output_dir = self.output_path.parent
+        self.output_dir.mkdir(exist_ok=True, parents=True)
 
         self.manifest_df = pd.read_csv(self.manifest_path)
         self.manifest_df['sample_id'] = self.manifest_df['sample_id'].astype(str).str.strip()
@@ -69,7 +71,7 @@ class TumorPurityComparison:
             raise FileNotFoundError(f"ERROR: no excel file found at {self.flow_db_path.resolve()}")
 
         print(f"\n#### --- Loading Flow Cytometry --- ####\n")
-        df = pd.read_excel(self.flow_db_path, sheet_name="db_purity_no1")       # because I have more than one sheet in the excel, I need to specify which one I want to load (in this case, the one with purity results)
+        df = pd.read_excel(self.flow_db_path, sheet_name="db_filtered")       # because I have more than one sheet in the excel, I need to specify which one I want to load (in this case, the one with purity results)
         
         # 2. Filtro usando .isin() per tenere solo le righe il cui 'ID' è nel manifest
         df_filtered = df[df['ID'].isin(self.manifest_df['sample_id'])].copy()
@@ -179,11 +181,11 @@ class TumorPurityComparison:
         if len(self.failed_samples) > 0:
             print(f"[NOTE] The {len(self.failed_samples)} samples lacking PureCN convergence are kept in the dataset to accurately evaluate the robustness of ASCAT.sc and IchorCNA.\n")
 
-        self.output_dir.parent.mkdir(exist_ok=True, parents=True)
+        self.output_dir.mkdir(exist_ok=True, parents=True)
         
         # FIX: Impostato il separatore su virgola per coerenza con l'estensione .csv
-        self.df_merged.to_csv(self.output_dir, sep=',', index=False)
-        print(f"#### --- Results merged and saved to: {self.output_dir} --- ####\n")
+        self.df_merged.to_csv(self.output_path, sep=',', index=False)
+        print(f"#### --- Results merged and saved to: {self.output_path} --- ####\n")
 
     def save_quality_report(self):
         """Save a quality filter report to accompany the final results"""
@@ -227,15 +229,22 @@ def main():
     parser.add_argument("--flow_db", required=True, help="Path to Excel flow cytometry DB")
     parser.add_argument("--ascat_dir", required=True, help="Base directory for ASCAT results")
     parser.add_argument("--purecn_dir", required=True, help="Base directory for PureCN results")
-    parser.add_argument("--output", required=True, help="Final TSV output path")
+    parser.add_argument("--output", required=True, help="Final CSV output path")
+    parser.add_argument("--visualization_dir", default=None,
+                        help="Directory where plotting outputs will be saved (default: <output>/plots)")
     args = parser.parse_args()
+
+    output_file = Path(args.output)          # Es: cartella_test/purity.csv
+    output_dir = output_file.parent          # Es: cartella_test/
+    output_dir.mkdir(parents=True, exist_ok=True)
+    visualization_dir = Path(args.visualization_dir) if args.visualization_dir else output_dir / "plots"
 
     tumor_comparison = TumorPurityComparison(
         manifest_path=args.manifest,
         flow_db_path=args.flow_db,
         ascat_dir=args.ascat_dir,
         purecn_dir=args.purecn_dir,
-        output_dir=args.output
+        output_path=output_file
     )
     
     tumor_comparison.load_flow_citometry_results()
@@ -248,13 +257,12 @@ def main():
     # Esecuzione del modulo di visualizzazione
     try:
         vis_path = Path(args.output)
-        out_dir = vis_path.parent
-        visualization = TumorPurityVisualization(vis_path, out_dir)
+        visualization = TumorPurityVisualization(vis_path, visualization_dir)
 
         print("-" * 100)
         visualization.load_data()
         visualization.generate_all_plots()
-        print(f" #### --- Visualization completed, results saved in: {out_dir} --- ####\n")
+        print(f" #### --- Visualization completed, results saved in: {visualization_dir} --- ####\n")
     except Exception as e:
         print(f"[ERROR] Visualization module failed: {e}")
 

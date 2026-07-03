@@ -1,0 +1,2 @@
+"Sampleid","Purity","Ploidy","Sex","Contamination","Flagged","Failed","Curated","Comment"
+"3051_S18",0.31,2.81983184635859,"Coverage: ? VCF: F",0,TRUE,FALSE,FALSE,"HIGH AT- OR GC-DROPOUT"

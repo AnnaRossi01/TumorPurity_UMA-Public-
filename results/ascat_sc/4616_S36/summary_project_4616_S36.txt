@@ -1,0 +1,2 @@
+samplename	purity	ploidy	ploidy.tumour
+remDup_recal_4616_S36.bam	remDup_recal_4616_S36.bam	0.66	1.94	1.97266289051754

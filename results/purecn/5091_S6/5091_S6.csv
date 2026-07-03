@@ -1,0 +1,2 @@
+"Sampleid","Purity","Ploidy","Sex","Contamination","Flagged","Failed","Curated","Comment"
+"5091_S6",0.29,5.99988127161562,"Coverage: ? VCF: F",0,TRUE,FALSE,FALSE,"RARE KARYOTYPE;LOW PURITY"

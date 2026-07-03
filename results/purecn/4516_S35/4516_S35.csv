@@ -1,0 +1,2 @@
+"Sampleid","Purity","Ploidy","Sex","Contamination","Flagged","Failed","Curated","Comment"
+"4516_S35",0.92,4.43903365010571,"Coverage: ? VCF: F",0,TRUE,FALSE,FALSE,"HIGH PURITY AND model.homozygous=FALSE;POOR GOF (73.5%);HIGH AT- OR GC-DROPOUT"

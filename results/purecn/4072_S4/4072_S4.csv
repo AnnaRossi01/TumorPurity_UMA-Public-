@@ -1,0 +1,2 @@
+"Sampleid","Purity","Ploidy","Sex","Contamination","Flagged","Failed","Curated","Comment"
+"4072_S4",0.49,2.19278882324681,"Coverage: ? VCF: F",0,TRUE,FALSE,FALSE,"POOR GOF (67.8%);HIGH AT- OR GC-DROPOUT"

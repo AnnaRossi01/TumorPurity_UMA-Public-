@@ -30,6 +30,32 @@ class TumorPurityVisualization:
         self.df = pd.read_csv(self.data_file, sep=',')
         self.df.columns = self.df.columns.str.strip()    
 
+    def save_metrics_summary(self, output_file=None):
+        """Export a compact CSV summary of correlation and error metrics for each tool."""
+        self._assert_data_loaded()
+        output_path = Path(output_file) if output_file else self.output_dir / "metrics_summary.csv"
+        output_path.parent.mkdir(exist_ok=True, parents=True)
+
+        rows = []
+        for tool_col in self.get_tool_columns():
+            stats = self._tool_stats(tool_col)
+            rows.append({
+                'Tool': self._pretty_tool_name(tool_col),
+                'Tool_Column': tool_col,
+                'n_valid_samples': int(stats['n']),
+                'pearson_r': stats['pearson_r'],
+                'spearman_r': stats['spearman_r'],
+                'r_squared': stats['r_value'] ** 2,
+                'mae': stats['mae'],
+                'rmse': stats['rmse'],
+                'mean_difference': stats['mean_diff'],
+            })
+
+        metrics_df = pd.DataFrame(rows)
+        metrics_df.to_csv(output_path, index=False)
+        print(f"Metrics summary saved to: {output_path}")
+        return metrics_df
+
     def get_tool_columns(self):
         """Get all tool columns (exclude ID and purity_flow)"""
         return [col for col in self.df.columns if col.startswith('purity_') and col != 'purity_flow']

@@ -1,0 +1,2 @@
+samplename	purity	ploidy	ploidy.tumour
+remDup_recal_2183_S47.bam	remDup_recal_2183_S47.bam	1	2	2

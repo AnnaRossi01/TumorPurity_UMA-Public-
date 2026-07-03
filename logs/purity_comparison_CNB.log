@@ -1,0 +1,153 @@
+/mnt/drive02/Tumor_purity_pipeline/workflow/scripts/visualization.py:124: FutureWarning: 
+
+Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `x` variable to `hue` and set `legend=False` for the same effect.
+
+  bars = sns.barplot(x='Tool', y='Value', data=df_metrics,
+/mnt/drive02/Tumor_purity_pipeline/workflow/scripts/visualization.py:124: FutureWarning: 
+
+Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `x` variable to `hue` and set `legend=False` for the same effect.
+
+  bars = sns.barplot(x='Tool', y='Value', data=df_metrics,
+/mnt/drive02/Tumor_purity_pipeline/workflow/scripts/visualization.py:438: FutureWarning: 
+
+Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `x` variable to `hue` and set `legend=False` for the same effect.
+
+  sns.boxplot(x='Method', y='Tumor Purity', data=df_melted,
+/mnt/drive02/Tumor_purity_pipeline/workflow/scripts/visualization.py:124: FutureWarning: 
+
+Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `x` variable to `hue` and set `legend=False` for the same effect.
+
+  bars = sns.barplot(x='Tool', y='Value', data=df_metrics,
+/mnt/drive02/Tumor_purity_pipeline/workflow/scripts/visualization.py:124: FutureWarning: 
+
+Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `x` variable to `hue` and set `legend=False` for the same effect.
+
+  bars = sns.barplot(x='Tool', y='Value', data=df_metrics,
+/mnt/drive02/Tumor_purity_pipeline/workflow/scripts/visualization.py:438: FutureWarning: 
+
+Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `x` variable to `hue` and set `legend=False` for the same effect.
+
+  sns.boxplot(x='Method', y='Tumor Purity', data=df_melted,
+
+#### --- Loading Flow Cytometry --- ####
+
+Flow Cytometry Data loaded: 157 samples
+
+#### --- Loading ASCAT.sc results --- ####
+
+ASCAT.sc Data loaded: 157 samples
+
+#### --- Loading ichorCNA results --- ####
+
+ichorCNA Data loaded: 157 samples
+
+#### --- Loading PureCN results --- ####
+
+  [FILTERED] PureCN failed for 7175_S8: insufficient somatic variants (likely PSCBS crash)
+  [FILTERED] PureCN failed for 7090_S4: insufficient somatic variants (likely PSCBS crash)
+  [FILTERED] PureCN failed for 7035_S2: insufficient somatic variants (likely PSCBS crash)
+  [FILTERED] PureCN failed for 6964_S8: insufficient somatic variants (likely PSCBS crash)
+  [FILTERED] PureCN failed for 6747_S3: insufficient somatic variants (likely PSCBS crash)
+  [FILTERED] PureCN failed for 6947_S7: insufficient somatic variants (likely PSCBS crash)
+PureCN Data loaded: 157 samples (Failed: 6)
+
+#### --- Integrating Genomic Status (CNB) --- ####
+Genomic Status and CNB burden successfully integrated.
+
+
+#### --- Quality Summary --- ####
+Total samples analyzed in the cohort: 157
+Samples exhibiting non-convergence (NA) in PureCN: 6
+
+[NOTE] The 6 samples lacking PureCN convergence are kept in the dataset to accurately evaluate the robustness of ASCAT.sc and IchorCNA.
+
+#### --- Results merged and saved to: results/purity_comparison_CNB/purity_comparison.csv --- ####
+
+
+#### --- Burden Titration Analysis --- ####
+Samples retained after removing Flow=1.0: 96
+Burden titration plot saved to: results/purity_comparison_CNB/plots/MAE_Titration_vs_Burden.png
+ Threshold  N_Samples  purity_ascat  purity_ichorCNA  purity_PureCN
+      0.00         95     18.340000        34.965221      27.178022
+      0.05         91     18.015385        33.900066      26.196552
+      0.10         77     17.383117        30.563377      25.354054
+      0.15         68     15.751471        28.716176      25.483077
+      0.20         58     14.477586        28.460000      26.101786
+      0.25         50     15.556000        28.177400      24.420833
+      0.30         34     13.064706        28.326471      25.169697
+      0.35         25     12.936000        30.182000      24.808333
+      0.40         17     12.405882        27.094118      31.181250
+Quality filter report saved to: results/purity_comparison_CNB/quality_filter_report.txt
+
+----------------------------------------------------------------------------------------------------
+#### --- STRATIFIED VISUALIZATION INITIALIZED --- ####
+Generating plots for Flat genomes (n=58)...
+
+#### --- Generating plots for ASCAT.sc vs Flow Cytometry --- ####
+
+
+#### --- Generating plots for IchorCNA vs Flow Cytometry --- ####
+
+
+#### --- Generating plots for PureCN vs Flow Cytometry --- ####
+
+
+#### --- Generating Multiple Tools Comparison Plot & Friedman Test --- ####
+
+
+### --- Generating RMSE Comparison Bar Chart --- ####
+
+
+#### --- Generating MAE Comparison Bar Chart --- ####
+
+
+#### --- Generating Comparative Boxplot --- ####
+
+
+#### --- Delegating Correlation Matrix to R (ggplot2) --- ####
+
+[SUCCESS] Heatmap generated using ggplot2
+[1] "[SUCCESS] Grafico a triangolo generato con successo: results/purity_comparison_CNB/plots/Flat_Genomes/Spearman_correlation_R_corrected.png"
+
+
+#### --- Generating Comprehensive Metrics Bubble Chart --- ####
+
+Metrics summary saved to: results/purity_comparison_CNB/plots/Flat_Genomes/flat_metrics_summary.csv
+Generating plots for Altered genomes (n=98)...
+
+#### --- Generating plots for ASCAT.sc vs Flow Cytometry --- ####
+
+
+#### --- Generating plots for IchorCNA vs Flow Cytometry --- ####
+
+
+#### --- Generating plots for PureCN vs Flow Cytometry --- ####
+
+
+#### --- Generating Multiple Tools Comparison Plot & Friedman Test --- ####
+
+
+### --- Generating RMSE Comparison Bar Chart --- ####
+
+
+#### --- Generating MAE Comparison Bar Chart --- ####
+
+
+#### --- Generating Comparative Boxplot --- ####
+
+
+#### --- Delegating Correlation Matrix to R (ggplot2) --- ####
+
+[SUCCESS] Heatmap generated using ggplot2
+[1] "[SUCCESS] Grafico a triangolo generato con successo: results/purity_comparison_CNB/plots/Altered_Genomes/Spearman_correlation_R_corrected.png"
+
+
+#### --- Generating Comprehensive Metrics Bubble Chart --- ####
+
+Metrics summary saved to: results/purity_comparison_CNB/plots/Altered_Genomes/altered_metrics_summary.csv
+
+Stratified metrics saved to: results/purity_comparison_CNB/stratified_metrics_summary.csv
+Group comparison saved to: results/purity_comparison_CNB/stratified_metrics_difference.csv
+
+ #### --- All stratified visualizations completed --- ####
+

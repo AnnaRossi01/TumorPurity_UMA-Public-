@@ -1,0 +1,31 @@
+
+#### --- Loading Flow Cytometry --- ####
+
+Flow Cytometry Data loaded: 19 samples
+
+#### --- Loading ASCAT.sc results --- ####
+
+ASCAT.sc Data loaded: 19 samples
+
+#### --- Loading ichorCNA results --- ####
+
+ichorCNA Data loaded: 19 samples
+
+#### --- Loading PureCN results --- ####
+
+PureCN Data loaded: 19 samples (Failed: 0)
+
+
+#### --- Quality Summary --- ####
+Total samples analyzed in the cohort: 19
+Samples exhibiting non-convergence (NA) in PureCN: 0
+
+#### --- Results merged and saved to: results/purity_comparison_normali/purity_comparison.csv --- ####
+
+Quality filter report saved to: results/quality_filter_report.txt
+
+----------------------------------------------------------------------------------------------------
+
+#### --- Generating plots for ASCAT.sc vs Flow Cytometry --- ####
+
+[ERROR] Visualization module failed: Cannot calculate a linear regression if all x values are identical

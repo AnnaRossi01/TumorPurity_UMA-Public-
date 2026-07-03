@@ -4,7 +4,7 @@ import pandas as pd
 configfile: "config/config.yaml"
 
 # ---- Manifest parsing ---- #
-manifest_df = pd.read_csv("config/manifest_7724.csv")
+manifest_df = pd.read_csv("config/manifest_158.csv")
 manifest_df.set_index("sample_id", inplace=True)
 print("Manifest loaded successfully. Available samples:")
 print(manifest_df.index.tolist())
@@ -22,8 +22,8 @@ ASCAT_SIF  = f"{config['singularity_image']}/ascatsc_env_v3.sif"
 # ---- - Main rule ---- #
 rule all:
     input:
-        "results/purity_comparison_test/purity_comparison.csv",
-        "results/purity_comparison_test/plots",
+        "results/purity_comparison_CNB/purity_comparison.csv",
+        "results/purity_comparison_CNB/plots",
         expand("results/ascat_sc/{sample}/ascat.done", sample=SAMPLES),
         expand("results/purecn/{sample}/{sample}.csv", sample=SAMPLES)
 
@@ -241,18 +241,19 @@ rule purity_comparison:
     input: 
         ascat_done = expand("results/ascat_sc/{sample}/ascat.done", sample=SAMPLES),
         purecn_csv = expand("results/purecn/{sample}/{sample}.csv", sample=SAMPLES), 
-        manifest = "config/manifest_prova.csv",
+        manifest = "config/manifest_158.csv",
+        cnb_data = "CNB_analysis/CNVkit_classification_results.csv",
         script = "workflow/scripts/purity_comparisonOOP.py"
     output:
-        report = "results/purity_comparison_test/purity_comparison.csv",
-        plots = directory("results/purity_comparison_test/plots")
+        report = "results/purity_comparison_CNB/purity_comparison.csv",
+        plots = directory("results/purity_comparison_CNB/plots")
     params: 
-        flow_db = "/mnt/drive02/Tumor_purity_pipeline/flowdb_prova.xlsx",
+        flow_db = "/mnt/drive02/Tumor_purity_pipeline/metadata_GoldStandard_filtrato.xlsx",
         ascat_dir = "results/ascat_sc/",
         purecn_dir = "results/purecn/",
-        visualization_dir = "results/purity_comparison_test/plots"
+        visualization_dir = "results/purity_comparison_CNB/plots"
     log: 
-        "logs/purity_comparison_test.log"
+        "logs/purity_comparison_CNB.log"
     conda: 
         "workflow/envs/python_env.yaml" 
     shell: 
@@ -263,6 +264,7 @@ rule purity_comparison:
             --ascat_dir {params.ascat_dir} \
             --purecn_dir {params.purecn_dir} \
             --output {output.report} \
+            --cnb_data {input.cnb_data} \
             --visualization_dir {params.visualization_dir} > {log} 2>&1
         """
 

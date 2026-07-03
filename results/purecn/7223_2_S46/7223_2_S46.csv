@@ -1,0 +1,2 @@
+"Sampleid","Purity","Ploidy","Sex","Contamination","Flagged","Failed","Curated","Comment"
+"7223_2_S46",0.15,1.97159404370227,"Coverage: ? VCF: F",0,TRUE,FALSE,FALSE,"LOW PURITY;POOR GOF (68.5%)"

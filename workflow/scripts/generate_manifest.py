@@ -29,7 +29,7 @@ def main():
     ichor_base_folder = base_dir / 'drive02' / 'UMA'       # DA MODIFICARE
 
     # Path to the input Excel file
-    excel_file = Path("/mnt/drive02/Tumor_purity_pipeline/db_normali.xlsx")
+    excel_file = Path("/mnt/drive02/Tumor_purity_pipeline/metadata_GoldStandard_filtrato.xlsx")
     if not excel_file.exists():
         print(f"ERROR: no excel file found at {excel_file.resolve()}")
         return
@@ -73,7 +73,7 @@ def main():
     # 4. Creation of the final DataFrame and export to CSV (Comma-separated)
     manifest_df = pd.DataFrame(manifest_rows)
     out_dir = Path("/mnt/drive02/Tumor_purity_pipeline/config/")
-    output_csv = "manifest_normali.csv"
+    output_csv = "manifest_158.csv"
     manifest_df.to_csv(out_dir / output_csv, sep=",", index=False)
     
     print(f"Successfully generated manifest! Created file '{output_csv}' with {len(manifest_df)} samples ready.")

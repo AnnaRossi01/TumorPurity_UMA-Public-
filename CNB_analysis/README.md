@@ -4,9 +4,9 @@
 
 Questa analisi valuta l'instabilità genomica di ciascun campione tumorale attraverso il Copy Number Burden (CNB), con l'obiettivo di comprendere e giustificare il comportamento degli algoritmi di stima della purezza tumorale su una coorte di pazienti affetti da Mieloma Multiplo.
 
-## Workflow definitivo
+## Workflow 
 
-### Fase 1: Arbitro esterno (ortogonalità)
+### Fase 1: Algoritmo ortogonale
 
 I file .cns ottenuti da CNVkit vengono convertiti in formato .seg. Questo passaggio consente di ottenere una rappresentazione indipendente dello stato genomico reale del campione, senza introdurre bias legati agli strumenti oggetto di confronto.
 
@@ -26,7 +26,7 @@ Il database viene diviso nei due sottogruppi e le visualizzazioni principali ven
 
 ## Appunti per la tesi: Analisi del Copy Number Burden (CNB)
 
-### 1. Rationale
+### 1. Base logica
 
 L'analisi del CNB è stata introdotta per indagare il collasso delle performance degli algoritmi di stima della purezza tumorale (ASCAT.sc, IchorCNA, PureCN) nella coorte di pazienti con Mieloma Multiplo.
 
@@ -37,7 +37,7 @@ Gli strumenti basati sul Copy Number non quantificano direttamente le cellule tu
 
 ### 2. Metodologia e strumento ortogonale
 
-Per evitare un bias di validazione interna, non sono stati utilizzati i file di segmentazione prodotti dagli strumenti sotto esame. È stato scelto CNVkit come approccio ortogonale e indipendente per generare i file .cns, successivamente convertiti nel formato .seg del Broad Institute.
+Per evitare un bias di validazione interna, non sono stati utilizzati i file di segmentazione prodotti dagli strumenti sotto esame. È stato scelto CNVkit come approccio ortogonale e indipendente per generare i file .cns, successivamente convertiti nel formato .seg.
 
 ### 3. Parametri valutati
 
@@ -71,3 +71,5 @@ La divisione in due gruppi consente di ricalcolare metriche di validazione come 
 
 - Se le performance migliorano nel gruppo Altered, l'utilità degli algoritmi risulta confermata, ma limitata ai pazienti con alto burden genomico.
 - Se le performance rimangono inaccettabili in entrambi i gruppi, ciò suggerisce un limite strutturale insormontabile del sequenziamento targeted a 0.46 MB.
+
+SAMPLES -> 156 (98 alterated, 58 flat)

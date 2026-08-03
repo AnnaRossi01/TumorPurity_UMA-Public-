@@ -1,0 +1,7 @@
+LINEAR REGRESSION ANALYSIS (PureCN vs Flow Cytometry):
+Valid Samples (no NA): 91
+Equation: y = 0.25x + 0.34
+R-squared: 0.03
+P-value: 8.043e-02
+Standard Error: 0.141
+Mean Absolute Error: 27.18%

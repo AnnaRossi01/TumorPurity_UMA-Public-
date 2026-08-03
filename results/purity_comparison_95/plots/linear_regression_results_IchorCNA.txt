@@ -1,0 +1,7 @@
+LINEAR REGRESSION ANALYSIS (IchorCNA vs Flow Cytometry):
+Valid Samples (no NA): 95
+Equation: y = 0.54x + 0.00
+R-squared: 0.16
+P-value: 6.942e-05
+Standard Error: 0.130
+Mean Absolute Error: 34.97%

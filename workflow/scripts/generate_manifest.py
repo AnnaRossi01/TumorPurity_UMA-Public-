@@ -29,14 +29,23 @@ def main():
     ichor_base_folder = base_dir / 'drive02' / 'UMA'       # DA MODIFICARE
 
     # Path to the input Excel file
-    excel_file = Path("/mnt/drive02/Tumor_purity_pipeline/metadata_GoldStandard_filtrato.xlsx")
+    excel_file = Path("/mnt/drive02/Tumor_purity_pipeline/db_last.xlsx")
     if not excel_file.exists():
         print(f"ERROR: no excel file found at {excel_file.resolve()}")
         return
 
-    # 2. Reading the Excel database (specific sheet)
-    df = pd.read_excel(excel_file)
-    print(f" Uploaded {len(df)} excel's samples. Processing...")
+    # 2. Reading the Excel database from the intended sheet
+    xls = pd.ExcelFile(excel_file)
+    sheet_names = xls.sheet_names
+    print(f"Found Excel sheets: {sheet_names}")
+
+    if len(sheet_names) > 1:
+        sheet_name = sheet_names[1]  # use the second sheet when available
+    else:
+        sheet_name = sheet_names[0]
+
+    df = pd.read_excel(excel_file, sheet_name=sheet_name)
+    print(f"Reading sheet '{sheet_name}' with {len(df)} rows. Processing...")
 
     # List that will contain the rows of our final manifest
     manifest_rows = []
@@ -73,7 +82,7 @@ def main():
     # 4. Creation of the final DataFrame and export to CSV (Comma-separated)
     manifest_df = pd.DataFrame(manifest_rows)
     out_dir = Path("/mnt/drive02/Tumor_purity_pipeline/config/")
-    output_csv = "manifest_158.csv"
+    output_csv = f"manifest_{len(manifest_df)}.csv"
     manifest_df.to_csv(out_dir / output_csv, sep=",", index=False)
     
     print(f"Successfully generated manifest! Created file '{output_csv}' with {len(manifest_df)} samples ready.")

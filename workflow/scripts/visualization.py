@@ -8,11 +8,12 @@
 
 # ---- LIBRARIES ----
 import pandas as pd
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-from scipy import stats     # algoritmi e strumenti matematici per l'analisi statistica
+from scipy import stats
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 
@@ -83,8 +84,10 @@ class TumorPurityVisualization:
         }.get(tool_col, '#3498db')
 
     def _filtered_xy(self, tool_col):
-        mask = ~np.isnan(self.df['purity_flow']) & ~np.isnan(self.df[tool_col])
-        return self.df.loc[mask, 'purity_flow'], self.df.loc[mask, tool_col]
+        x = pd.to_numeric(self.df['purity_flow'], errors='coerce')
+        y = pd.to_numeric(self.df[tool_col], errors='coerce')
+        mask = x.notna() & y.notna()
+        return x[mask], y[mask]
 
     def _tool_stats(self, tool_col):
         x, y = self._filtered_xy(tool_col)
@@ -288,7 +291,7 @@ class TumorPurityVisualization:
                                  'MAE', 'MAE_comparison_barchart.png')
 
     def metrics_bubble_heatmap(self):
-        """Generates a comprehensive dot-plot matrix comparing tools across all metrics."""
+        """Generate a bubble heatmap comparing tools across multiple metrics."""
         if self.df is None:
             raise ValueError("Data not loaded.")
 
@@ -329,7 +332,7 @@ class TumorPurityVisualization:
             metrics_dict['Value'].append(r2)
             metrics_dict['Goodness'].append(max(0, r2))
 
-            # 4. MAE (L'errore viene invertito: 0 errore = 1 Goodness. Se errore >= 40% -> 0 Goodness)
+            # 4. MAE (lower error gives higher goodness; errors above 40% are clipped to zero)
             mae = np.mean(np.abs(y_true - y_pred))
             metrics_dict['Tool'].append(tool_name)
             metrics_dict['Metric'].append('MAE')
@@ -358,14 +361,14 @@ class TumorPurityVisualization:
         df_m['x'] = df_m['Metric'].map(x_map)
         df_m['y'] = df_m['Tool'].map(y_map)
 
-        # Creazione dello scatter plot (Le bolle)
-        # Dimensione: Goodness + 0.1 (per non far sparire del tutto i valori a zero)
+        # Create the bubble scatter plot
+        # Bubble size uses Goodness + 0.1 to avoid making zero values invisible
         scatter = ax.scatter(x=df_m['x'], y=df_m['y'],
                              s=(df_m['Goodness'] + 0.1) * 2500, 
                              c=df_m['Goodness'], cmap='RdYlGn', 
                              alpha=0.85, edgecolors='black', linewidth=1.5)
 
-        # Annotazioni di testo sotto ogni bolla
+        # Annotation below each bubble
         for i, row in df_m.iterrows():
             if row['Metric'] in ['MAE', 'RMSE']:
                 val_text = f"{row['Value']:.1%}" # In percentuale per gli errori
@@ -376,7 +379,7 @@ class TumorPurityVisualization:
                     ha='center', va='top', fontsize=11, fontweight='bold',
                     bbox=dict(boxstyle='round,pad=0.2', facecolor='white', alpha=0.7, edgecolor='none'))
 
-        # Formattazione estetica accademica
+        # Styling for readability
         ax.set_xticks(range(len(x_labels)))
         ax.set_xticklabels(x_labels, fontsize=12, fontweight='bold')
         ax.set_yticks(range(len(y_labels)))
@@ -385,14 +388,14 @@ class TumorPurityVisualization:
         ax.set_xlim(-0.5, len(x_labels) - 0.5)
         ax.set_ylim(-0.6, len(y_labels) - 0.2)
         
-        # Griglia leggera per guidare l'occhio
+        # Light grid to guide visual comparison
         ax.grid(color='gray', linestyle='--', linewidth=0.5, alpha=0.4)
 
         plt.title('Comprehensive Tool Performance Matrix', fontsize=18, pad=25, fontweight='bold')
         sns.despine(left=True, bottom=True)
         plt.tight_layout()
 
-        # Salvataggio
+        # Save the figure
         output_file = self.output_dir / "Metrics_Bubble_Heatmap.png"
         plt.savefig(output_file, dpi=300, bbox_inches='tight')
         plt.close()
@@ -405,11 +408,11 @@ class TumorPurityVisualization:
             
         print("\n#### --- Generating Comparative Boxplot --- ####\n")
 
-        # Seleziono solo le colonne di interesse
+        # Keep only the columns relevant for plotting
         cols_to_keep = ['purity_flow'] + self.get_tool_columns()
         df_filtered = self.df[cols_to_keep].copy()
         
-        # Rinomino le colonne per renderle eleganti nel grafico
+        # Rename columns for readability in the plot
         rename_dict = {'purity_flow': 'Flow Cytometry'}
         for col in self.get_tool_columns():
             tool_name = col.replace('purity_', '')
@@ -421,10 +424,10 @@ class TumorPurityVisualization:
             
         df_filtered.rename(columns=rename_dict, inplace=True)
 
-        # Trasformo il dataframe dal formato "largo" al formato "lungo" (necessario per seaborn)
+        # Convert the data from wide to long format for seaborn
         df_melted = df_filtered.melt(var_name='Method', value_name='Tumor Purity').dropna()
 
-        # Dizionario colori (Flow Cytometry in grigio per fare da baseline)
+        # Color palette (flow cytometry is shown in gray as the baseline)
         palette = {
             'Flow Cytometry': '#95a5a6', 
             'ASCAT.sc': '#27ae60', 
@@ -434,12 +437,12 @@ class TumorPurityVisualization:
 
         plt.figure(figsize=(12, 7))
         
-        # 1. Disegno i Boxplot
+        # 1. Draw the boxplots
         sns.boxplot(x='Method', y='Tumor Purity', data=df_melted, 
                     palette=palette, width=0.5, boxprops=dict(alpha=0.7), 
                     showfliers=False) # Nascondo gli outlier del boxplot perché li disegno con lo stripplot
         
-        # 2. Aggiungo i singoli campioni (puntini) sopra le scatole
+        # 2. Overlay individual samples as points on top of the boxes
         sns.stripplot(x='Method', y='Tumor Purity', data=df_melted, 
                       color='black', alpha=0.4, size=4, jitter=True)
 
@@ -459,52 +462,54 @@ class TumorPurityVisualization:
 
     
     def correlation_matrix_heatmap(self):
-        """Generates the correlation heatmap by calling the STHDA R script."""
+        """Generate a Spearman correlation heatmap, using R when available and a Python fallback otherwise."""
         if self.df is None:
             raise ValueError("Data not loaded.")
 
-        print("\n#### --- Delegating Correlation Matrix to R (ggplot2) --- ####\n")
+        print("\n#### --- Generating Spearman Correlation Heatmap --- ####\n")
 
-        # 1. Preparazione dei dati e rinomina colonne
         cols_to_keep = ['purity_flow'] + self.get_tool_columns()
         df_corr_data = self.df[cols_to_keep].copy()
-        
+
         rename_dict = {'purity_flow': 'Flow Cytometry'}
         for col in self.get_tool_columns():
             tool_name = col.replace('purity_', '')
-            if tool_name.lower() == 'ascat': tool_name = 'ASCAT.sc'
-            elif tool_name.lower() == 'purecn': tool_name = 'PureCN'
-            elif tool_name.lower() == 'ichorcna': tool_name = 'IchorCNA'
+            if tool_name.lower() == 'ascat':
+                tool_name = 'ASCAT.sc'
+            elif tool_name.lower() == 'purecn':
+                tool_name = 'PureCN'
+            elif tool_name.lower() == 'ichorcna':
+                tool_name = 'IchorCNA'
             rename_dict[col] = tool_name
-            
-        df_corr_data.rename(columns=rename_dict, inplace=True)
 
-        # 2. CALCOLO DELLA MATRICE IN PYTHON
+        df_corr_data.rename(columns=rename_dict, inplace=True)
+        df_corr_data = df_corr_data.apply(pd.to_numeric, errors='coerce')
         corr_matrix = df_corr_data.corr(method='spearman')
 
-        # 3. Salvataggio della matrice in un CSV temporaneo
-        matrix_csv_path = self.output_dir / "spearman_matrix_for_R.csv"
-        corr_matrix.to_csv(matrix_csv_path)
+        r_script_path = Path(__file__).resolve().parent / 'heatmap.R'
+        if r_script_path.exists() and shutil.which('Rscript'):
+            matrix_csv_path = self.output_dir / 'spearman_matrix_for_R.csv'
+            corr_matrix.to_csv(matrix_csv_path)
+            try:
+                result = subprocess.run(
+                    ['Rscript', str(r_script_path), str(matrix_csv_path), str(self.output_dir)],
+                    check=True,
+                    capture_output=True,
+                    text=True
+                )
+                print('[SUCCESS] Heatmap generated using ggplot2')
+                if result.stdout:
+                    print(result.stdout)
+                return
+            except subprocess.CalledProcessError as e:
+                print(f"[WARNING] R heatmap failed: {e.stderr or e.stdout}; falling back to Python heatmap")
 
-        r_script_path = Path(__file__).resolve().parent / "heatmap.R"
-        
-        try:
-            result = subprocess.run(
-                ["Rscript", str(r_script_path), str(matrix_csv_path), str(self.output_dir)],
-                check=True,
-                capture_output=True,
-                text=True
-            )
-            print("[SUCCESS] Heatmap generated using ggplot2")
-            if result.stdout:
-                print(result.stdout)
-        except subprocess.CalledProcessError as e:
-            print(f"[ERROR] R script failed with return code {e.returncode}")
-            print(e.stderr or e.stdout)
-            sys.exit(1)
-        except FileNotFoundError:
-            print("[ERROR] Rscript not found.")
-            sys.exit(1)
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(corr_matrix, annot=True, cmap='viridis', vmin=-1, vmax=1, fmt='.2f')
+        plt.title('Spearman Correlation Heatmap')
+        plt.tight_layout()
+        plt.savefig(self.output_dir / 'Spearman_Correlation_Heatmap.png', dpi=300, bbox_inches='tight')
+        plt.close()
 
     
     

@@ -14,12 +14,11 @@
 
 # ---- LIBRARIES ----
 import argparse
-import argparse
 from pathlib import Path
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import sys 
+import sys
 from visualization import TumorPurityVisualization
 
 
@@ -30,14 +29,13 @@ class TumorPurityComparison:
     output_path: file path where the merged results will be saved
     """
 
-    def __init__(self, manifest_path, flow_db_path, ascat_dir, purecn_dir, output_path, cnb_data_path=None):
-        " Initialize the paths of snakefile"
+    def __init__(self, manifest_path, flow_db_path, ascat_dir, purecn_dir, output_path):
+        """Initialize the workflow paths and the main data structures."""
         self.manifest_path = Path(manifest_path)
         self.flow_db_path = Path(flow_db_path)
         self.ascat_base_dir = Path(ascat_dir)
         self.purecn_base_dir = Path(purecn_dir)
         self.output_path = Path(output_path)
-        self.cnb_data_path = Path(cnb_data_path) if cnb_data_path else None # NUOVO
         self.output_dir = self.output_path.parent
         self.output_dir.mkdir(exist_ok=True, parents=True)
 
@@ -45,43 +43,49 @@ class TumorPurityComparison:
         self.manifest_df['sample_id'] = self.manifest_df['sample_id'].astype(str).str.strip()
         #self.manifest_path['sample_id'] = self.manifest_df['sample_id'].astype(str).str.strip() # ensure that the sample_id column is treated as string
 
-        # ---- INIZIO BLOCCO FIX & DEBUG SUI 6 CAMPIONI ----
+        # ---- DUPLICATE SAMPLE HANDLING ----
         duplicates = self.manifest_df[self.manifest_df.duplicated(subset=['sample_id'])]
         if not duplicates.empty:
-            print(f"\n[ATTENZIONE] Trovati {len(duplicates)} campioni duplicati nel manifest.csv:")
+            print(f"\n[WARNING] Found {len(duplicates)} duplicate samples in the manifest.csv:")
             print(duplicates['sample_id'].tolist())
-            print("Rimozione dei duplicati per prevenire la 'Merge Explosion'...\n")
+            print("Removing duplicates to prevent a merge explosion...\n")
             self.manifest_df = self.manifest_df.drop_duplicates(subset=['sample_id'], keep='first')
-        # ---- FINE BLOCCO FIX & DEBUG ----
 
         # Initialize quality_flag if not present (backward compatibility)
         if 'quality_flag' not in self.manifest_df.columns:
             self.manifest_df['quality_flag'] = 'PASS'
 
         self.df_flow = None
-        self.df_tools = {} # dictionary for all the tools i will use (ASCAT.sc, PureCN...)
+        self.df_tools = {}  # Dictionary for all tools (ASCAT.sc, PureCN, ichorCNA)
         self.df_merged = None
         self.failed_samples = []  # Track failed samples for reporting
+        self.ichorcna_cutoff_summary = None
 
 
     def load_flow_citometry_results(self):
-        """Reads the flow citometry results from an Excel file and returns a DataFrame. Select only the purity value for each patient
-        # possibile problema --> l.exel di input con dati di flow dentro cartella di ASCAT_UMA, in futuro magari va modiifcato il percorso per dividere meglio i dati 
-        """
+        """Load flow-cytometry purity values from the Excel input file."""
         if not self.flow_db_path.exists():
             raise FileNotFoundError(f"ERROR: no excel file found at {self.flow_db_path.resolve()}")
 
         print(f"\n#### --- Loading Flow Cytometry --- ####\n")
-        df = pd.read_excel(self.flow_db_path)       # because I have more than one sheet in the excel, I need to specify which one I want to load (in this case, the one with purity results)
-        
-        # 2. Filtro usando .isin() per tenere solo le righe il cui 'ID' è nel manifest
-        df_filtered = df[df['ID'].isin(self.manifest_df['sample_id'])].copy()
-        
-        # Rimuovo eventuali ID duplicati tenendo la prima misurazione trovata
-        df_filtered = df_filtered.drop_duplicates(subset=['ID'])
-        
-        # 3. Seleziono solo le colonne che mi servono e rinomino
-        self.df_flow = df_filtered[['ID', 'purity']].rename(columns={'purity': 'purity_flow'})
+
+        excel_file = pd.ExcelFile(self.flow_db_path)
+        sheet_name = excel_file.sheet_names[0] if excel_file.sheet_names else None
+        df = pd.read_excel(self.flow_db_path, sheet_name=sheet_name)
+        df.columns = [str(col).strip() for col in df.columns]
+
+        id_col = next((col for col in df.columns if col.lower() == 'id'), None)
+        purity_col = next((col for col in df.columns if col.lower() == 'purity'), None)
+
+        if id_col is None or purity_col is None:
+            raise ValueError(f"Expected columns 'ID' and 'purity' in {self.flow_db_path}, found: {list(df.columns)}")
+
+        df_filtered = df[df[id_col].astype(str).str.strip().isin(self.manifest_df['sample_id'].astype(str).str.strip())].copy()
+        df_filtered = df_filtered.drop_duplicates(subset=[id_col])
+
+        df_filtered[id_col] = df_filtered[id_col].astype(str).str.strip()
+        self.df_flow = df_filtered[[id_col, purity_col]].rename(columns={purity_col: 'purity_flow'})
+        self.df_flow.columns = ['ID', 'purity_flow']
         print(f"Flow Cytometry Data loaded: {len(self.df_flow)} samples\n")
 
     def load_ASCAT_results(self): 
@@ -142,11 +146,11 @@ class TumorPurityComparison:
                         if purity_col:
                             purity_val = df_purecn[purity_col[0]].iloc[0]
                         else:
-                            print(f"  [ERROR] Colonna purity non trovata in {sample_id}.csv")
+                            print(f"  [ERROR] The purity column was not found in {sample_id}.csv")
                             purity_val = pd.NA
                             
                     except Exception as e:
-                        print(f"  [ERROR] Impossibile leggere o parsare {file_PureCN}: {e}")
+                        print(f"  [ERROR] Failed to read or parse {file_PureCN}: {e}")
                         purity_val = pd.NA
 
                     # Check if PureCN failed (NA/NaN value)
@@ -159,123 +163,105 @@ class TumorPurityComparison:
                     PureCN_list.append({"ID": sample_id, 'purity_PureCN': purity_val})
                 else:
                     PureCN_list.append({"ID": sample_id, 'purity_PureCN': pd.NA})
-                    print(f"  [WARNING] PureCN result not found for: {sample_id}, added NA\n")
+                    print(f"  [WARNING] PureCN result not found for: {sample_id}; added NA\n")
 
-            # Manteniamo la protezione anti-crash di Pandas
+            # Keep Pandas robust to missing values and parsing issues
             self.df_tools['PureCN'] = pd.DataFrame(PureCN_list, columns=["ID", "purity_PureCN"])
             print(f"PureCN Data loaded: {len(self.df_tools['PureCN'])} samples (Failed: {len(self.failed_samples)})\n")
 
 
     def merge_and_save(self):
-        """Merges the flow cytometry and all tool results on the ID column.
-        All samples are kept in the final dataset to avoid survivorship bias."""
+        """Merge the flow and tool results on the sample ID and export the final table."""
         self.df_merged = self.df_flow.copy()
 
-        for tool_name, df_tool in self.df_tools.items():
+        for _, df_tool in self.df_tools.items():
             if df_tool is not None and not df_tool.empty:
                 self.df_merged = pd.merge(self.df_merged, df_tool, on='ID', how='left')
-        
-        if self.cnb_data_path and self.cnb_data_path.exists():
-            print(f"#### --- Integrating Genomic Status (CNB) --- ####")
-            df_cnb = pd.read_csv(self.cnb_data_path)
-            cnb_cols = ['ID']
-            if 'Genomic_Status' in df_cnb.columns:
-                cnb_cols.append('Genomic_Status')
-            if 'CN_Burden_Fraction' in df_cnb.columns:
-                cnb_cols.append('CN_Burden_Fraction')
 
-            if len(cnb_cols) > 1:
-                self.df_merged = pd.merge(self.df_merged, df_cnb[cnb_cols], on='ID', how='left')
-                print(f"Genomic Status and CNB burden successfully integrated.\n")
-            else:
-                print(f"[WARNING] No usable CNB columns found in {self.cnb_data_path.name}\n")
+        for col in ['purity_flow', 'purity_ascat', 'purity_ichorCNA', 'purity_PureCN']:
+            if col in self.df_merged.columns:
+                self.df_merged[col] = pd.to_numeric(self.df_merged[col], errors='coerce')
+
+        self.compute_ichorcna_cutoff()
 
         print(f"\n#### --- Quality Summary --- ####")
         print(f"Total samples analyzed in the cohort: {len(self.df_merged)}")
         print(f"Samples exhibiting non-convergence (NA) in PureCN: {len(self.failed_samples)}\n")
 
         if len(self.failed_samples) > 0:
-            print(f"[NOTE] The {len(self.failed_samples)} samples lacking PureCN convergence are kept in the dataset to accurately evaluate the robustness of ASCAT.sc and IchorCNA.\n")
+            print(f"[NOTE] The {len(self.failed_samples)} samples lacking PureCN convergence are kept in the dataset to evaluate robustness across methods.\n")
 
         self.output_dir.mkdir(exist_ok=True, parents=True)
-        
-        # FIX: Impostato il separatore su virgola per coerenza con l'estensione .csv
         self.df_merged.to_csv(self.output_path, sep=',', index=False)
         print(f"#### --- Results merged and saved to: {self.output_path} --- ####\n")
 
-    def plot_burden_titration(self, output_dir=None):
-        """Compute MAE across increasing CNB thresholds and save a combined plot and table."""
+    def compute_ichorcna_cutoff(self):
+        """Apply the ichorCNA cutoff and report MAD and correlation before/after filtering."""
         if self.df_merged is None:
             raise ValueError("No merged dataset available. Run merge_and_save() first.")
 
-        plot_dir = Path(output_dir) if output_dir else self.output_dir / "plots"
-        plot_dir.mkdir(exist_ok=True, parents=True)
+        if 'purity_ichorCNA' not in self.df_merged.columns:
+            self.ichorcna_cutoff_summary = { 
+                'ichorCNA_cutoff': np.nan,
+                'mad_before_cutoff': np.nan,
+                'mad_after_cutoff': np.nan,
+                'spearman_before_cutoff': np.nan,
+                'spearman_after_cutoff': np.nan,
+            }
+            return self.ichorcna_cutoff_summary
 
-        if 'CN_Burden_Fraction' not in self.df_merged.columns:
-            print("[WARNING] CN_Burden_Fraction column not found; skipping burden titration analysis.")
-            return None
+        ichor_values = self.df_merged['purity_ichorCNA'].dropna()
+        if ichor_values.empty:
+            self.ichorcna_cutoff_summary = {
+                'ichorCNA_cutoff': np.nan,
+                'mad_before_cutoff': np.nan,
+                'mad_after_cutoff': np.nan,
+                'spearman_before_cutoff': np.nan,
+                'spearman_after_cutoff': np.nan,
+            }
+            return self.ichorcna_cutoff_summary
 
-        df_clean = self.df_merged[self.df_merged['purity_flow'] < 1.0].copy()
-        df_clean['CN_Burden_Fraction'] = pd.to_numeric(df_clean['CN_Burden_Fraction'], errors='coerce')
-        print(f"\n#### --- Burden Titration Analysis --- ####")
-        print(f"Samples retained after removing Flow=1.0: {len(df_clean)}")
+        mean_value = float(ichor_values.mean())
+        std_value = float(ichor_values.std(ddof=1))
+        cutoff = float(mean_value + 3.0 * std_value)
 
-        thresholds = [0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40]
-        results = []
-        tools = ['purity_ascat', 'purity_ichorCNA', 'purity_PureCN']
+        self.df_merged['ichorCNA_cutoff'] = cutoff
+        self.df_merged['ichorCNA_cleaned'] = self.df_merged['purity_ichorCNA'].where(
+            self.df_merged['purity_ichorCNA'] > cutoff, np.nan
+        )
+        self.df_merged['ichorCNA_cleaned'] = pd.to_numeric(self.df_merged['ichorCNA_cleaned'], errors='coerce')
 
-        for threshold in thresholds:
-            df_subset = df_clean[df_clean['CN_Burden_Fraction'] >= threshold]
-            row_data = {'Threshold': threshold, 'N_Samples': len(df_subset)}
+        before_pairs = self.df_merged.dropna(subset=['purity_flow', 'purity_ichorCNA'])
+        after_pairs = self.df_merged.dropna(subset=['purity_flow', 'ichorCNA_cleaned'])
 
-            for tool in tools:
-                if tool in df_subset.columns and len(df_subset) > 0:
-                    valid_mask = df_subset[tool].notna() & df_subset['purity_flow'].notna()
-                    if valid_mask.sum() > 0:
-                        mae = np.mean(np.abs(df_subset.loc[valid_mask, tool] - df_subset.loc[valid_mask, 'purity_flow']))
-                        row_data[tool] = mae * 100.0
-                    else:
-                        row_data[tool] = np.nan
-                else:
-                    row_data[tool] = np.nan
+        mad_before = float(np.median(np.abs(before_pairs['purity_ichorCNA'] - np.median(before_pairs['purity_ichorCNA']))))
+        mad_after = float(np.median(np.abs(after_pairs['ichorCNA_cleaned'] - np.median(after_pairs['ichorCNA_cleaned']))))
 
-            results.append(row_data)
+        spearman_before = float(before_pairs['purity_flow'].corr(before_pairs['purity_ichorCNA'], method='spearman')) if len(before_pairs) > 1 else np.nan
+        spearman_after = float(after_pairs['purity_flow'].corr(after_pairs['ichorCNA_cleaned'], method='spearman')) if len(after_pairs) > 1 else np.nan
 
-        df_results = pd.DataFrame(results)
-        df_results.to_csv(plot_dir / "burden_titration_results.csv", index=False)
+        summary = {
+            'ichorCNA_cutoff': cutoff,
+            'n_ichorCNA_values': int(len(ichor_values)),
+            'mad_before_cutoff': mad_before,
+            'mad_after_cutoff': mad_after,
+            'spearman_before_cutoff': spearman_before,
+            'spearman_after_cutoff': spearman_after,
+            'pearson_before_cutoff': float(before_pairs['purity_flow'].corr(before_pairs['purity_ichorCNA'], method='pearson')) if len(before_pairs) > 1 else np.nan,
+            'pearson_after_cutoff': float(after_pairs['purity_flow'].corr(after_pairs['ichorCNA_cleaned'], method='pearson')) if len(after_pairs) > 1 else np.nan,
+        }
 
-        fig, ax1 = plt.subplots(figsize=(10, 6))
-        colors = {'purity_ascat': '#2ca02c', 'purity_ichorCNA': '#ff7f0e', 'purity_PureCN': '#d62728'}
-        labels = {'purity_ascat': 'ASCAT.sc', 'purity_ichorCNA': 'IchorCNA', 'purity_PureCN': 'PureCN'}
+        self.ichorcna_cutoff_summary = summary
+        summary_path = self.output_dir / 'ichorcna_cutoff_summary.csv'
+        pd.DataFrame([summary]).to_csv(summary_path, index=False)
 
-        for tool in tools:
-            ax1.plot(df_results['Threshold'] * 100, df_results[tool], marker='o', linewidth=2, color=colors[tool], label=labels[tool])
-
-        ax1.set_xlabel('Soglia Minima di Genoma Alterato (%)', fontsize=12, fontweight='bold')
-        ax1.set_ylabel('Mean Absolute Error (MAE %)', fontsize=12, fontweight='bold')
-        ax1.grid(True, linestyle='--', alpha=0.5)
-
-        ax2 = ax1.twinx()
-        ax2.bar(df_results['Threshold'] * 100, df_results['N_Samples'], width=2.5, alpha=0.2, color='gray', label='N° Campioni nel Subset')
-        ax2.set_ylabel('Numero di Campioni (N)', fontsize=12, color='gray', fontweight='bold')
-        ax2.tick_params(axis='y', labelcolor='gray')
-
-        for i, txt in enumerate(df_results['N_Samples']):
-            ax2.annotate(txt, (df_results['Threshold'].iloc[i] * 100, df_results['N_Samples'].iloc[i]), ha='center', va='bottom', color='gray', fontsize=9)
-
-        lines_1, labels_1 = ax1.get_legend_handles_labels()
-        lines_2, labels_2 = ax2.get_legend_handles_labels()
-        ax1.legend(lines_1 + lines_2, labels_1 + labels_2, loc='upper right')
-
-        plt.title("Dinamica dell'Errore (MAE) vs. Soglia di Instabilità Genomica", fontsize=14, fontweight='bold')
-        plt.tight_layout()
-        output_file = plot_dir / "MAE_Titration_vs_Burden.png"
-        plt.savefig(output_file, dpi=300)
-        plt.close()
-
-        print(f"Burden titration plot saved to: {output_file}")
-        print(df_results.to_string(index=False))
-        return df_results
+        print(f"IchorCNA cutoff (mean + 3*SD): {cutoff:.4f}")
+        print(f"MAD before cutoff: {mad_before:.4f}")
+        print(f"MAD after cutoff:  {mad_after:.4f}")
+        print(f"Spearman before cutoff: {spearman_before:.4f}")
+        print(f"Spearman after cutoff:  {spearman_after:.4f}")
+        print(f"Cutoff summary saved to: {summary_path}")
+        return summary
 
     def save_quality_report(self):
         """Save a quality filter report to accompany the final results"""
@@ -311,61 +297,6 @@ class TumorPurityComparison:
 
         print(f"Quality filter report saved to: {report_path}\n")
 
-    def _run_group_analysis(self, df_group, group_name, output_dir, visualization_dir):
-        """Create a stratified CSV and run visualization/metrics export for one genomic group."""
-        group_file = output_dir / f"{self.output_path.stem}_{group_name.lower()}.csv"
-        df_group.to_csv(group_file, index=False)
-
-        vis_dir = visualization_dir / f"{group_name}_Genomes"
-        vis_dir.mkdir(parents=True, exist_ok=True)
-
-        print(f"Generating plots for {group_name} genomes (n={len(df_group)})...")
-        vis = TumorPurityVisualization(group_file, vis_dir)
-        vis.load_data()
-        vis.generate_all_plots()
-        metrics_df = vis.save_metrics_summary(vis_dir / f"{group_name.lower()}_metrics_summary.csv")
-
-        return group_file, vis_dir, metrics_df
-
-    def run_stratified_analysis(self, df_master, output_dir, visualization_dir):
-        """Create separate Flat/Altered outputs and compare their metrics."""
-        if 'Genomic_Status' not in df_master.columns:
-            return None
-
-        output_dir.mkdir(parents=True, exist_ok=True)
-        visualization_dir.mkdir(parents=True, exist_ok=True)
-
-        group_metrics = {}
-        for group_name in ['Flat', 'Altered']:
-            df_group = df_master[df_master['Genomic_Status'] == group_name].copy()
-            _, _, metrics_df = self._run_group_analysis(df_group, group_name, output_dir, visualization_dir)
-            metrics_df.insert(0, 'Genomic_Status', group_name)
-            group_metrics[group_name] = metrics_df
-
-        summary_df = pd.concat(group_metrics.values(), ignore_index=True)
-        summary_path = output_dir / "stratified_metrics_summary.csv"
-        summary_df.to_csv(summary_path, index=False)
-
-        flat_df = group_metrics['Flat']
-        altered_df = group_metrics['Altered']
-        comparison_df = pd.merge(
-            flat_df[['Tool', 'n_valid_samples', 'pearson_r', 'spearman_r', 'r_squared', 'mae', 'rmse']],
-            altered_df[['Tool', 'n_valid_samples', 'pearson_r', 'spearman_r', 'r_squared', 'mae', 'rmse']],
-            on='Tool',
-            suffixes=('_Flat', '_Altered')
-        )
-        comparison_df['delta_pearson_r'] = comparison_df['pearson_r_Altered'] - comparison_df['pearson_r_Flat']
-        comparison_df['delta_spearman_r'] = comparison_df['spearman_r_Altered'] - comparison_df['spearman_r_Flat']
-        comparison_df['delta_r_squared'] = comparison_df['r_squared_Altered'] - comparison_df['r_squared_Flat']
-        comparison_df['delta_mae'] = comparison_df['mae_Altered'] - comparison_df['mae_Flat']
-        comparison_df['delta_rmse'] = comparison_df['rmse_Altered'] - comparison_df['rmse_Flat']
-
-        comparison_path = output_dir / "stratified_metrics_difference.csv"
-        comparison_df.to_csv(comparison_path, index=False)
-
-        print(f"\nStratified metrics saved to: {summary_path}")
-        print(f"Group comparison saved to: {comparison_path}")
-        return summary_path, comparison_path
 
 
 def main():
@@ -375,7 +306,6 @@ def main():
     parser.add_argument("--ascat_dir", required=True, help="Base directory for ASCAT results")
     parser.add_argument("--purecn_dir", required=True, help="Base directory for PureCN results")
     parser.add_argument("--output", required=True, help="Final CSV output path")
-    parser.add_argument("--cnb_data", default=None, help="Path to CNVkit classification results (Optional)") 
     parser.add_argument("--visualization_dir", default=None,
                         help="Directory where plotting outputs will be saved (default: <output>/plots)")
     args = parser.parse_args()
@@ -391,7 +321,6 @@ def main():
         ascat_dir=args.ascat_dir,
         purecn_dir=args.purecn_dir,
         output_path=output_file,
-        cnb_data_path=args.cnb_data
     )
     
     tumor_comparison.load_flow_citometry_results()
@@ -399,26 +328,15 @@ def main():
     tumor_comparison.load_ichor_results()
     tumor_comparison.load_PureCN_results()
     tumor_comparison.merge_and_save()
-    tumor_comparison.plot_burden_titration(output_dir=output_dir / "plots")
     tumor_comparison.save_quality_report()
 
-    # Esecuzione del modulo di visualizzazione
     try:
-        df_master = tumor_comparison.df_merged
-
-        if 'Genomic_Status' in df_master.columns:
-            print("-" * 100)
-            print("#### --- STRATIFIED VISUALIZATION INITIALIZED --- ####")
-            tumor_comparison.run_stratified_analysis(df_master, output_dir, visualization_dir)
-            print(f"\n #### --- All stratified visualizations completed --- ####\n")
-        else:
-            vis_path = Path(args.output)
-            visualization = TumorPurityVisualization(vis_path, visualization_dir)
-            print("-" * 100)
-            visualization.load_data()
-            visualization.generate_all_plots()
-            print(f" #### --- Standard visualization completed, results in: {visualization_dir} --- ####\n")
-
+        vis_path = Path(args.output)
+        visualization = TumorPurityVisualization(vis_path, visualization_dir)
+        print("-" * 100)
+        visualization.load_data()
+        visualization.generate_all_plots()
+        print(f" #### --- Standard visualization completed, results in: {visualization_dir} --- ####\n")
     except Exception as e:
         print(f"[ERROR] Visualization module failed: {e}")
 

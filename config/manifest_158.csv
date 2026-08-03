@@ -1,5 +1,4 @@
 sample_id,bam,vcf,ichor_res
-6322_S7,/mnt/prunity_share/SEQUENCING/AIO_PANEL/BAM/run_40/hg19/remDup_recal_6322_S7.bam,/mnt/drive02/UMA/run_40/hg19/Mutect2/mutect2_6322_S7.vcf.gz,/mnt/drive02/UMA/run_40/hg19/ichorCNA/6322_S7.params.txt
 5647_S27,/mnt/prunity_share/SEQUENCING/AIO_PANEL/BAM/run_76/remDup_recal_5647_S27.bam,/mnt/drive02/UMA/run_76/Mutect2/mutect2_5647_S27.vcf.gz,/mnt/drive02/UMA/run_76/ichorCNA/5647_S27.params.txt
 7658_S17,/mnt/prunity_share/SEQUENCING/AIO_PANEL/BAM/run_77/remDup_recal_7658_S17.bam,/mnt/drive02/UMA/run_77/Mutect2/mutect2_7658_S17.vcf.gz,/mnt/drive02/UMA/run_77/ichorCNA/7658_S17.params.txt
 2471_S8,/mnt/prunity_share/SEQUENCING/AIO_PANEL/BAM/run_41/remDup_recal_2471_S8.bam,/mnt/drive02/UMA/run_41/Mutect2/mutect2_2471_S8.vcf.gz,/mnt/drive02/UMA/run_41/ichorCNA/2471_S8.params.txt

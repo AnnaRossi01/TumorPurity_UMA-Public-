@@ -1,7 +1,3 @@
-/mnt/drive02/Tumor_purity_pipeline/.snakemake/conda/34f8aa699ef856107aeb461deee356ea_/lib/python3.10/site-packages/numpy/_core/fromnumeric.py:3860: RuntimeWarning: Mean of empty slice.
-  return _methods._mean(a, axis=axis, dtype=dtype,
-/mnt/drive02/Tumor_purity_pipeline/.snakemake/conda/34f8aa699ef856107aeb461deee356ea_/lib/python3.10/site-packages/numpy/_core/_methods.py:145: RuntimeWarning: invalid value encountered in scalar divide
-  ret = ret.dtype.type(ret / rcount)
 /mnt/drive02/Tumor_purity_pipeline/workflow/scripts/visualization.py:127: FutureWarning: 
 
 Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `x` variable to `hue` and set `legend=False` for the same effect.
@@ -38,11 +34,11 @@ ichorCNA Data loaded: 95 samples
   [FILTERED] PureCN failed for 6947_S7: insufficient somatic variants (likely PSCBS crash)
 PureCN Data loaded: 95 samples (Failed: 4)
 
-IchorCNA cutoff (mean + 3*SD): 1.0357
+IchorCNA cutoff: 0.2383
 MAD before cutoff: 0.1224
-MAD after cutoff:  nan
+MAD after cutoff:  0.1213
 Spearman before cutoff: 0.3847
-Spearman after cutoff:  nan
+Spearman after cutoff:  0.4071
 Cutoff summary saved to: results/purity_comparison_95/ichorcna_cutoff_summary.csv
 
 #### --- Quality Summary --- ####

@@ -221,9 +221,8 @@ class TumorPurityComparison:
             }
             return self.ichorcna_cutoff_summary
 
-        mean_value = float(ichor_values.mean())
-        std_value = float(ichor_values.std(ddof=1))
-        cutoff = float(mean_value + 3.0 * std_value)
+
+        cutoff = 0.2383
 
         self.df_merged['ichorCNA_cutoff'] = cutoff
         self.df_merged['ichorCNA_cleaned'] = self.df_merged['purity_ichorCNA'].where(
@@ -234,6 +233,9 @@ class TumorPurityComparison:
         before_pairs = self.df_merged.dropna(subset=['purity_flow', 'purity_ichorCNA'])
         after_pairs = self.df_merged.dropna(subset=['purity_flow', 'ichorCNA_cleaned'])
 
+        n_above_cutoff = int((ichor_values > cutoff).sum())
+        n_below_cutoff = int((ichor_values <= cutoff).sum())
+
         mad_before = float(np.median(np.abs(before_pairs['purity_ichorCNA'] - np.median(before_pairs['purity_ichorCNA']))))
         mad_after = float(np.median(np.abs(after_pairs['ichorCNA_cleaned'] - np.median(after_pairs['ichorCNA_cleaned']))))
 
@@ -243,6 +245,8 @@ class TumorPurityComparison:
         summary = {
             'ichorCNA_cutoff': cutoff,
             'n_ichorCNA_values': int(len(ichor_values)),
+            'n_ichorCNA_above_cutoff': n_above_cutoff,
+            'n_ichorCNA_below_or_equal_cutoff': n_below_cutoff,
             'mad_before_cutoff': mad_before,
             'mad_after_cutoff': mad_after,
             'spearman_before_cutoff': spearman_before,
@@ -255,7 +259,7 @@ class TumorPurityComparison:
         summary_path = self.output_dir / 'ichorcna_cutoff_summary.csv'
         pd.DataFrame([summary]).to_csv(summary_path, index=False)
 
-        print(f"IchorCNA cutoff (mean + 3*SD): {cutoff:.4f}")
+        print(f"IchorCNA cutoff: {cutoff:.4f}")
         print(f"MAD before cutoff: {mad_before:.4f}")
         print(f"MAD after cutoff:  {mad_after:.4f}")
         print(f"Spearman before cutoff: {spearman_before:.4f}")

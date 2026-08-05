@@ -16,6 +16,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
 class TumorPurityVisualization:
@@ -291,14 +292,16 @@ class TumorPurityVisualization:
                                  'MAE', 'MAE_comparison_barchart.png')
 
     def metrics_bubble_heatmap(self):
-        """Generate a bubble heatmap comparing tools across multiple metrics."""
+        """Generate a bubble heatmap comparing tools across multiple metrics with split logic."""
         if self.df is None:
             raise ValueError("Data not loaded.")
 
         print("\n#### --- Generating Comprehensive Metrics Bubble Chart --- ####\n")
 
         tools = self.get_tool_columns()
-        metrics_dict = {'Tool': [], 'Metric': [], 'Value': [], 'Goodness': []}
+        
+        # Salviamo i valori grezzi, rimuovendo la logica confusa della "Goodness"
+        metrics_dict = {'Tool': [], 'Metric': [], 'Value': [], 'Category': []}
 
         for tool_col in tools:
             mask = ~np.isnan(self.df['purity_flow']) & ~np.isnan(self.df[tool_col])
@@ -310,48 +313,43 @@ class TumorPurityVisualization:
             elif tool_name.lower() == 'purecn': tool_name = 'PureCN'
             elif tool_name.lower() == 'ichorcna': tool_name = 'IchorCNA'
 
-            # 1. Pearson r
+            # --- ACCURACY METRICS (Higher is Better) ---
             p_r, _ = stats.pearsonr(y_true, y_pred)
             metrics_dict['Tool'].append(tool_name)
             metrics_dict['Metric'].append('Pearson r')
-            metrics_dict['Value'].append(p_r)
-            metrics_dict['Goodness'].append(max(0, p_r)) # Normalizzato 0-1
+            metrics_dict['Value'].append(max(0, p_r)) # Evita bolle negative
+            metrics_dict['Category'].append('Accuracy')
 
-            # 2. Spearman r
             s_r, _ = stats.spearmanr(y_true, y_pred)
             metrics_dict['Tool'].append(tool_name)
             metrics_dict['Metric'].append('Spearman r')
-            metrics_dict['Value'].append(s_r)
-            metrics_dict['Goodness'].append(max(0, s_r))
+            metrics_dict['Value'].append(max(0, s_r))
+            metrics_dict['Category'].append('Accuracy')
 
-            # 3. R-squared
             _, _, r_value, _, _ = stats.linregress(y_true, y_pred)
-            r2 = r_value**2
             metrics_dict['Tool'].append(tool_name)
             metrics_dict['Metric'].append('R-squared')
-            metrics_dict['Value'].append(r2)
-            metrics_dict['Goodness'].append(max(0, r2))
+            metrics_dict['Value'].append(max(0, r_value**2))
+            metrics_dict['Category'].append('Accuracy')
 
-            # 4. MAE (lower error gives higher goodness; errors above 40% are clipped to zero)
+            # --- ERROR METRICS (Lower is Better) ---
             mae = np.mean(np.abs(y_true - y_pred))
             metrics_dict['Tool'].append(tool_name)
             metrics_dict['Metric'].append('MAE')
             metrics_dict['Value'].append(mae)
-            metrics_dict['Goodness'].append(max(0, 1 - (mae * 2.5))) 
+            metrics_dict['Category'].append('Error')
 
-            # 5. RMSE
             rmse = np.sqrt(np.mean((y_true - y_pred)**2))
             metrics_dict['Tool'].append(tool_name)
             metrics_dict['Metric'].append('RMSE')
             metrics_dict['Value'].append(rmse)
-            metrics_dict['Goodness'].append(max(0, 1 - (rmse * 2.5)))
+            metrics_dict['Category'].append('Error')
 
         df_m = pd.DataFrame(metrics_dict)
 
         # --- PLOTTING ---
-        fig, ax = plt.subplots(figsize=(12, 6))
+        fig, ax = plt.subplots(figsize=(13, 6.5))
 
-        # Mappatura assi
         y_labels = df_m['Tool'].unique()
         x_labels = df_m['Metric'].unique()
 
@@ -361,46 +359,81 @@ class TumorPurityVisualization:
         df_m['x'] = df_m['Metric'].map(x_map)
         df_m['y'] = df_m['Tool'].map(y_map)
 
-        # Create the bubble scatter plot
-        # Bubble size uses Goodness + 0.1 to avoid making zero values invisible
-        scatter = ax.scatter(x=df_m['x'], y=df_m['y'],
-                             s=(df_m['Goodness'] + 0.1) * 2500, 
-                             c=df_m['Goodness'], cmap='RdYlGn', 
-                             alpha=0.85, edgecolors='black', linewidth=1.5)
+        # Separazione in due DataFrame per applicare logiche visive differenti
+        df_acc = df_m[df_m['Category'] == 'Accuracy']
+        df_err = df_m[df_m['Category'] == 'Error']
 
-        # Annotation below each bubble
+       # 1. Plot Metriche di Accuratezza
+        scatter_acc = ax.scatter(x=df_acc['x'], y=df_acc['y'],
+                                 s=(df_acc['Value'] + 0.05) * 2500, 
+                                 c=df_acc['Value'], cmap='Blues', 
+                                 alpha=0.85, edgecolors='black', linewidth=1.2, vmin=0, vmax=1)
+
+        # 2. Plot Metriche di Errore
+        scatter_err = ax.scatter(x=df_err['x'], y=df_err['y'],
+                                 s=(df_err['Value'] * 3000) + 100, 
+                                 c=df_err['Value'], cmap='Reds', 
+                                 alpha=0.85, edgecolors='black', linewidth=1.2)
+
+        # Annotazioni testuali sotto le bolle
         for i, row in df_m.iterrows():
-            if row['Metric'] in ['MAE', 'RMSE']:
-                val_text = f"{row['Value']:.1%}" # In percentuale per gli errori
+            if row['Category'] == 'Error':
+                val_text = f"{row['Value']:.1%}" 
             else:
-                val_text = f"{row['Value']:.2f}" # Frazione per correlazioni
+                val_text = f"{row['Value']:.2f}" 
 
-            ax.text(row['x'], row['y'] - 0.28, val_text,
+            ax.text(row['x'], row['y'] - 0.32, val_text,
                     ha='center', va='top', fontsize=11, fontweight='bold',
                     bbox=dict(boxstyle='round,pad=0.2', facecolor='white', alpha=0.7, edgecolor='none'))
 
-        # Styling for readability
+        # Styling degli assi
         ax.set_xticks(range(len(x_labels)))
         ax.set_xticklabels(x_labels, fontsize=12, fontweight='bold')
         ax.set_yticks(range(len(y_labels)))
         ax.set_yticklabels(y_labels, fontsize=12, fontweight='bold')
-
         ax.set_xlim(-0.5, len(x_labels) - 0.5)
-        ax.set_ylim(-0.6, len(y_labels) - 0.2)
+        ax.set_ylim(-0.8, len(y_labels) - 0.2)
         
-        # Light grid to guide visual comparison
-        ax.grid(color='gray', linestyle='--', linewidth=0.5, alpha=0.4)
+        # Divisore visivo e Intestazioni
+        divider_x = 2.5 
+        ax.axvline(x=divider_x, color='black', linewidth=1.5, linestyle='--')
 
-        plt.title('Comprehensive Tool Performance Matrix', fontsize=18, pad=25, fontweight='bold')
-        sns.despine(left=True, bottom=True)
-        plt.tight_layout()
+        ax.text(1, len(y_labels) - 0.3, "Correlation & Fit\n(Higher is Better)", 
+                ha='center', va='bottom', fontsize=13, fontweight='bold', color='#1f77b4')
+        ax.text(3.5, len(y_labels) - 0.3, "Prediction Error\n(Lower is Better)", 
+                ha='center', va='bottom', fontsize=13, fontweight='bold', color='#d62728')
+
+        ax.grid(color='gray', linestyle=':', linewidth=0.5, alpha=0.5)
+        
+        # Titolo (ora sarà perfettamente centrato sull'asse principale)
+        ax.set_title('Comprehensive Tool Performance Matrix', fontsize=18, pad=35, fontweight='bold')
+        
+        # Rimuove i bordi del grafico per un look più pulito
+        for spine in ax.spines.values():
+            spine.set_visible(False)
+
+        # --- GESTIONE COLORBAR MIGLIORATA ---
+        # Creiamo due assi manuali [sinistra, basso, larghezza, altezza]
+        # In questo modo non deformiamo il grafico e le teniamo separate e compatte
+        cax_acc = fig.add_axes([0.93, 0.55, 0.015, 0.25]) 
+        cbar_acc = fig.colorbar(scatter_acc, cax=cax_acc)
+        cbar_acc.set_label('Accuracy', fontsize=11, fontweight='bold')
+        cbar_acc.ax.tick_params(labelsize=9)
+
+        cax_err = fig.add_axes([0.93, 0.18, 0.015, 0.25])
+        cbar_err = fig.colorbar(scatter_err, cax=cax_err)
+        cbar_err.set_label('Error', fontsize=11, fontweight='bold')
+        cbar_err.ax.tick_params(labelsize=9)
+            
+        # N.B. Usiamo rect per evitare che tight_layout sovrascriva la posizione manuale delle colorbar
+        plt.tight_layout(rect=[0, 0, 0.90, 1])
 
         # Save the figure
         output_file = self.output_dir / "Metrics_Bubble_Heatmap.png"
         plt.savefig(output_file, dpi=300, bbox_inches='tight')
         plt.close()
 
-
+        
     def comparative_boxplot(self):
         """Generates a comparative boxplot of purity distributions across all methods."""
         if self.df is None:

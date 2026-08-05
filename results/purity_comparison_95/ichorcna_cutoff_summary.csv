@@ -1,2 +1,2 @@
-ichorCNA_cutoff,n_ichorCNA_values,mad_before_cutoff,mad_after_cutoff,spearman_before_cutoff,spearman_after_cutoff,pearson_before_cutoff,pearson_after_cutoff
-1.03567846152059,95,0.12239999999999998,,0.3846805377467887,,0.3965467066762329,
+ichorCNA_cutoff,n_ichorCNA_values,n_ichorCNA_above_cutoff,n_ichorCNA_below_or_equal_cutoff,mad_before_cutoff,mad_after_cutoff,spearman_before_cutoff,spearman_after_cutoff,pearson_before_cutoff,pearson_after_cutoff
+0.2383,95,73,22,0.12239999999999998,0.12129999999999996,0.3846805377467887,0.40710913809519683,0.3965467066762329,0.3966627606907971

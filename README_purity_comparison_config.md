@@ -1,76 +1,69 @@
-# Guida rapida per cambiare manifest e database flow cytometry
+# Quick guide: updating the manifest and the flow cytometry database
 
-Se vuoi usare un manifest diverso oppure un file Excel con i dati di flow cytometry diversi, modifica questi punti del workflow.
+If you want to run the workflow on a different cohort or use a different flow cytometry Excel file, the main changes are usually limited to the manifest path and the input table used for the final purity comparison.
 
-## 1) Manifest diverso
+## 1) Using a different manifest
 
-### File da aggiornare
-- [Snakefile](Snakefile)
-- [workflow/scripts/purity_comparisonOOP.py](workflow/scripts/purity_comparisonOOP.py)
+### Files to update
+- `Snakefile`
+- `workflow/scripts/purity_comparisonOOP.py`
 
-### Variabili da modificare
+### Variables to change
 
-Nel file [Snakefile](Snakefile):
-- riga 7: cambia il path del manifest usato all'inizio del workflow
-  - esempio: `pd.read_csv("config/manifest_normali.csv")`
-- riga 244: cambia il path del manifest passato alla regola `purity_comparison`
-  - esempio: `manifest = "config/manifest_normali.csv"`
+In `Snakefile`:
+- update the initial manifest loaded at the beginning of the workflow
+  - example: `pd.read_csv("config/manifest_normali.csv")`
+- update the manifest used in the `purity_comparison` rule
+  - example: `manifest = "config/manifest_normali.csv"`
 
-Nel file [workflow/scripts/purity_comparisonOOP.py](workflow/scripts/purity_comparisonOOP.py):
-- riga 43: il codice legge il manifest con `pd.read_csv(self.manifest_path)`
-- righe 44 e 57-58: controlla che la colonna `sample_id` sia presente e che `quality_flag` esista
+In `workflow/scripts/purity_comparisonOOP.py`:
+- the script reads the manifest using `pd.read_csv(self.manifest_path)`
+- it verifies that the `sample_id` column is present
+- it ensures that `quality_flag` exists, or creates it automatically if missing
 
-### Colonne richieste nel manifest
-Il manifest deve contenere almeno queste colonne:
+### Required columns in the manifest
+The manifest should contain at least these columns:
+
 - `sample_id`
 - `bam`
 - `vcf`
 - `ichor_res`
 
-Se il tuo file ha nomi delle colonne diversi, devi aggiornare anche il codice che legge questi valori.
+If your file uses different column names, update the parsing logic in the Python script accordingly.
 
-## 2) File Excel di flow cytometry diverso
+---
 
-### File da aggiornare
-- [Snakefile](Snakefile)
-- [workflow/scripts/purity_comparisonOOP.py](workflow/scripts/purity_comparisonOOP.py)
+## 2) Using a different flow cytometry Excel file
 
-### Variabili da modificare
+### Files to update
+- `Snakefile`
+- `workflow/scripts/purity_comparisonOOP.py`
 
-Nel file [Snakefile](Snakefile):
-- riga 250: cambia il percorso del file Excel di flow cytometry
-  - esempio: `flow_db = "/mnt/drive02/Tumor_purity_pipeline/flowdb_normali.xlsx"`
+### Variables to change
 
-Nel file [workflow/scripts/purity_comparisonOOP.py](workflow/scripts/purity_comparisonOOP.py):
-- riga 74: se il file Excel ha un foglio diverso, cambia la lettura con `pd.read_excel(self.flow_db_path, sheet_name=...)`
-- riga 77: controlla che gli ID nel file Excel coincidano con i campioni del manifest
-- riga 83: il codice seleziona la colonna `purity` e la rinomina in `purity_flow`
+In `Snakefile`:
+- update the Excel path used in the `purity_comparison` rule
+  - example: `flow_db = "flowdb_normali.xlsx"`
 
-### Colonne richieste nel file Excel di flow cytometry
-Il file Excel deve contenere almeno queste colonne:
+In `workflow/scripts/purity_comparisonOOP.py`:
+- if the correct sheet is not the first one, specify it explicitly with `pd.read_excel(..., sheet_name=...)`
+- verify that sample IDs in the Excel file match the manifest sample IDs
+- ensure the purity column is selected and renamed to `purity_flow`
+
+### Required columns in the flow cytometry file
+The Excel file should contain at least:
+
 - `ID`
 - `purity`
 
-Se il tuo file usa altri nomi per queste colonne, devi aggiornare le righe sopra indicate.
+If the column names differ, update the script to match the new names.
 
-## 3) Esempio minimo di struttura
+---
+
+## 3) Minimal example structure
 
 ### Manifest CSV
 ```csv
 sample_id,bam,vcf,ichor_res
 sample001,/path/to/sample001.bam,/path/to/sample001.vcf.gz,/path/to/sample001.params.txt
 sample002,/path/to/sample002.bam,/path/to/sample002.vcf.gz,/path/to/sample002.params.txt
-```
-
-### Excel flow cytometry
-```text
-ID,purity
-sample001,0.65
-sample002,0.72
-```
-
-## 4) Nota importante
-Se cambi nome o posizione del manifest o del file Excel, ricordati anche di aggiornare:
-- il path nel comando Snakemake
-- il path usato dallo script Python
-- i nomi delle colonne attese dal codice

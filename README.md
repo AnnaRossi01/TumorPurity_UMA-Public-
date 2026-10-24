@@ -221,6 +221,17 @@ The key conceptual entry point is the data-cleaning and harmonization logic, bec
 
 This repository is a sanitized public version of a larger internal analysis workflow. It is intended to present the scientific and computational approach in a clean, accessible form without exposing private cohort information or infrastructure-specific paths.
 
+## Important files to understand the workflow
+
+If you want to understand how to use the code and adapt it to a new cohort, start from these files:
+
+- `manifest_workflow_guide.md` — how to run the workflow with a different manifest
+- `purity_comparison_setup_guide.md` — how to update the flow cytometry table and the configuration
+- `workflow/scripts/purity_comparisonOOP.py` — main comparison logic and data harmonization
+- `CNB_analysis/README.md` — biological rationale and copy-number burden interpretation
+- `Snakefile` — workflow orchestration and execution order
+
+
 ## Summary
 
 This project sits at the intersection of computational biology, tumor genomics, and data engineering. Its contribution is not only the direct comparison of purity estimation methods, but the careful design of a workflow that ensures these comparisons are meaningful, reproducible, and biologically interpretable.

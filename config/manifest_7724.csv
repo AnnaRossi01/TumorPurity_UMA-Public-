@@ -1,2 +1,0 @@
-sample_id,bam,vcf,ichor_res
-7724_S4,/mnt/prunity_share/SEQUENCING/AIO_PANEL/BAM/run_82/remDup_recal_7724_S4.bam,/mnt/drive02/UMA/run_82/Mutect2/mutect2_7724_S4.vcf.gz,/mnt/drive02/UMA/run_82/ichorCNA/7724_S4.params.txt
